@@ -5,14 +5,18 @@
   "description": "Allows remote control of Chrome browser",
   "permissions": [
     "tabs",
-    "activeTab"
+    "activeTab",
+    "scripting",
+    "storage"
   ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icon16.png",
-      "48": "icon48.png",
-      "128": "icon128.png"
-    }
-  }
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html"
 }
