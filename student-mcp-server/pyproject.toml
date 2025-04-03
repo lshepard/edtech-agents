@@ -6,11 +6,19 @@ requires-python = ">=3.8"
 dependencies = [
     "websockets>=12.0",
     "aioconsole>=0.6.1",
+    "fastapi>=0.95.1",
+    "uvicorn>=0.22.0",
+    "python-multipart>=0.0.6",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.uv]
-pip = ">=23.3.2" 
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.uvicorn]
+host = "0.0.0.0"
+port = 3000
+reload = true
