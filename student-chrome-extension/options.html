@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Remote Browser Controller - Settings</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      max-width: 600px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 8px 15px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <h1>Remote Browser Controller Settings</h1>
+  
+  <div class="form-group">
+    <label for="serverUrl">MCP Server WebSocket URL:</label>
+    <input type="text" id="serverUrl" placeholder="ws://192.168.1.100:8080">
+    <p>Enter the WebSocket URL of your MCP server (e.g., ws://192.168.1.100:8080)</p>
+  </div>
+  
+  <div class="form-group">
+    <label for="autoConnect">Auto-connect on startup:</label>
+    <input type="checkbox" id="autoConnect">
+    <p>Automatically connect to the MCP server when the browser starts</p>
+  </div>
+  
+  <button id="saveBtn">Save Settings</button>
+  
+  <div id="status" class="status" style="display: none;"></div>
+  
+  <script src="options.js"></script>
+</body>
+</html>
