@@ -42,6 +42,24 @@
       background-color: #f8d7da;
       color: #721c24;
     }
+    hr {
+      margin: 20px 0;
+      border: 0;
+      border-top: 1px solid #ddd;
+    }
+    h2 {
+      margin-top: 25px;
+      color: #333;
+    }
+    .sub-option {
+      margin-left: 20px;
+      margin-top: 10px;
+    }
+    select {
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
@@ -50,7 +68,7 @@
   <div class="form-group">
     <label for="userName">Your Name:</label>
     <input type="text" id="userName" placeholder="Enter your name">
-    <p>Enter your name/p>
+    <p>Enter your name</p>
   </div>
   
   <div class="form-group">
@@ -63,6 +81,69 @@
     <label for="autoConnect">Auto-connect on startup:</label>
     <input type="checkbox" id="autoConnect">
     <p>Automatically connect to the MCP server when the browser starts</p>
+  </div>
+  
+  <hr>
+  
+  <h2>Activity Tracking Settings</h2>
+  
+  <div class="form-group">
+    <label for="enableTracking">Enable activity tracking:</label>
+    <input type="checkbox" id="enableTracking" checked>
+    <p>When enabled, the extension will track your browsing activity and send it to the MCP server</p>
+  </div>
+  
+  <div class="form-group">
+    <label>Track these activities:</label>
+    <div>
+      <input type="checkbox" id="trackPageNavigation" checked>
+      <label for="trackPageNavigation" style="display: inline; font-weight: normal;">Page navigation</label>
+    </div>
+    <div>
+      <input type="checkbox" id="trackClicks" checked>
+      <label for="trackClicks" style="display: inline; font-weight: normal;">Mouse clicks</label>
+    </div>
+    <div>
+      <input type="checkbox" id="trackFormInput" checked>
+      <label for="trackFormInput" style="display: inline; font-weight: normal;">Form interactions</label>
+    </div>
+    <div>
+      <input type="checkbox" id="trackScrolling" checked>
+      <label for="trackScrolling" style="display: inline; font-weight: normal;">Scrolling</label>
+    </div>
+    <div>
+      <input type="checkbox" id="trackTimeSpent" checked>
+      <label for="trackTimeSpent" style="display: inline; font-weight: normal;">Time spent on page</label>
+    </div>
+  </div>
+  
+  <div class="form-group">
+    <label for="enableScreenshots">Automatic screenshots:</label>
+    <input type="checkbox" id="enableScreenshots" checked>
+    <p>Capture the current webpage when significant actions occur</p>
+    
+    <div class="sub-option">
+      <div>
+        <input type="checkbox" id="screenshotOnNavigation" checked>
+        <label for="screenshotOnNavigation" style="display: inline; font-weight: normal;">Capture on page navigation</label>
+      </div>
+      <div>
+        <input type="checkbox" id="screenshotOnClick" checked>
+        <label for="screenshotOnClick" style="display: inline; font-weight: normal;">Capture on significant clicks</label>
+      </div>
+      <div>
+        <input type="checkbox" id="screenshotOnFormSubmit" checked>
+        <label for="screenshotOnFormSubmit" style="display: inline; font-weight: normal;">Capture on form submission</label>
+      </div>
+      <div>
+        <label for="screenshotQuality" style="display: inline; font-weight: normal;">Screenshot quality:</label>
+        <select id="screenshotQuality">
+          <option value="0.3">Low (smaller file size)</option>
+          <option value="0.6" selected>Medium</option>
+          <option value="0.9">High (larger file size)</option>
+        </select>
+      </div>
+    </div>
   </div>
   
   <button id="saveBtn">Save Settings</button>

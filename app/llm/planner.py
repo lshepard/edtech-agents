@@ -2,7 +2,7 @@ import os
 import json
 import glob
 import logging
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from fastapi import HTTPException, status # Import HTTPException and status
 
@@ -29,7 +29,13 @@ class ActivityRecommendation(BaseModel):
     title: str = Field(description="The title or name of the recommended activity")
     description: str = Field(description="A brief description of the activity")
     rationale: str = Field(description="Why this activity is appropriate for the student")
-    link: str = Field(description="A URL to the activity, if available", default="")
+    link: Optional[str] = Field(description="A URL to the activity, if available")
+
+class ActivityRecommendationList(BaseModel):
+    """List of activity recommendations"""
+    recommendations: List[ActivityRecommendation] = Field(
+        description="List of activity recommendations containing 1-3 items"
+    )
 
 def load_context_files(directory: str) -> List[Dict[str, Any]]:
     """Loads all JSON files from the specified directory."""
@@ -96,7 +102,7 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
 
     try:
         # 3. Initialize the LLM
-        llm = ChatOpenAI(temperature=0.7, model_name="gpt-o3-mini")
+        llm = ChatOpenAI(model_name="gpt-4o")
         
         # 4. Define the Tavily search tool
         tavily_tool = TavilySearch(
@@ -104,10 +110,7 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
             description="Search the web for relevant educational resources. Use this when you need to find specific learning materials related to the student's grade level and topic."
         )
         
-        # Create a Pydantic output parser
-        parser = PydanticOutputParser(pydantic_object=ActivityRecommendation)
-        
-        # 5. Define the agent prompt with structured output requirements
+        # 5. Define the system message for the agent
         system_template = """You are an expert elementary teacher. Your task is to plan an individualized 
         activity for a student based on their needs and available resources.
 
@@ -115,8 +118,9 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
         common core standards as they may help with matching.
 
         Next, consider the local resources provided in the context. These are pre-vetted materials 
-        that may be suitable for the student's needs. Review them carefully. If any of the pre-vetted materials
-        matches the subject and grade level desired, then select one of those.
+        that may be suitable for the student's needs. Review them carefully. Prefer materials that match grade level but 
+        if any of the pre-vetted materials
+        matches the subject desired (even if a different grade level), then select one of those.
 
         ONLY FALL BACK TO SEARCH if there are no local resources that match.
         In that case, then you can search the web for reliable, high quality educational games and activities that teach the specific skill.
@@ -131,15 +135,18 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
         Steps:
         1. Review the student's information and the available local resources.
         2. If necessary, search for appropriate educational resources that match the student's grade level and topic. Search for "open educational resources" and look for links that can be utilized without any issues.
-        3. Select or recommend the best resources or activities, explaining why it's appropriate. Select 1-3 resources.
+        3. Select or recommend the best resources or activities, explaining why it's appropriate. Choose between 1-3 resources.
         4. For each recommendation, include a DETAILED RATIONALE that explains:
            - How this activity matches the student's grade level
            - How it specifically addresses the skills or concepts they're working on
            - Why you chose this activity over other options
            - Whether it came from local resources or web search and why
-        5. You MUST format your final answer as a valid JSON array containing 1-3 activities, each with these fields: title, description, rationale, and link.
-
-        Make sure all required fields are filled out properly and in valid JSON format.
+        
+        You MUST structure your output as a list of activity recommendations, each containing:
+        - title: The name of the activity (required)
+        - description: A detailed description of the activity (required)
+        - rationale: Why this activity is appropriate for the student (required)
+        - link: URL to the activity (optional, use an empty string "" if not available)
         """
         
         # Format the system message with the actual values
@@ -154,7 +161,7 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
             MessagesPlaceholder(variable_name="agent_scratchpad"),
         ])
         
-        # 6. Create the agent
+        # 6. Create the agent with structured output
         agent = create_openai_functions_agent(
             llm=llm, 
             tools=[tavily_tool], 
@@ -169,7 +176,7 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
             handle_parsing_errors=True,
         )
         
-        # 8. Run the agent - we don't need to pass the variables again since they're already formatted in the system message
+        # 9. Run the agent to gather information and process
         response = await agent_executor.ainvoke({
             "input": "" # Empty input is required for the agent to run
         })
@@ -177,88 +184,106 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
         raw_result = response.get("output", "")
         logger.info(f"Agent generated plan: {raw_result[:100]}...")
         
-        # 9. Parse the structured output
+        # 10. Process the raw output into structured format
         try:
-            # Extract JSON from raw_result if needed (in case it contains other text)
-            import re
-            json_match = re.search(r'(\[[\s\S]*\])', raw_result)
-            if json_match:
-                json_str = json_match.group(1)
-            else:
-                # Try to find any JSON-like content
-                json_match = re.search(r'({[\s\S]*})', raw_result)
+            # First, try direct JSON parsing if the output seems to be in JSON format
+            try:
+                import re
+                json_match = re.search(r'(\[[\s\S]*\])', raw_result)
                 if json_match:
-                    # Found a single object, wrap it in an array
-                    json_str = "[" + json_match.group(1) + "]"
-                else:
-                    # No JSON found, treat as error
-                    logger.error(f"No valid JSON found in output: {raw_result}")
-                    raise ValueError("No JSON content found in the LLM response")
-            
-            # Log the extracted JSON for debugging
-            logger.info(f"Extracted JSON: {json_str}")
-            
-            # Parse JSON into structured data
-            recommendations_array = json.loads(json_str)
-            
-            # Take the first recommendation if there are multiple
-            if isinstance(recommendations_array, list) and len(recommendations_array) > 0:
-                # Validate each recommendation
-                valid_recommendations = []
-                for i, rec in enumerate(recommendations_array):
-                    try:
+                    json_str = json_match.group(1)
+                    # Try to parse as direct JSON array of recommendations
+                    recommendations_array = json.loads(json_str)
+                    
+                    # Validate and convert to our expected format
+                    valid_recommendations = []
+                    for rec in recommendations_array:
                         # Ensure all required fields exist
                         if 'title' not in rec:
-                            logger.warning(f"Recommendation {i} missing title, adding default")
-                            rec['title'] = "Activity " + str(i+1)
-                        
+                            rec['title'] = "Recommended Activity"
                         if 'description' not in rec:
-                            logger.warning(f"Recommendation {i} missing description, adding default")
                             rec['description'] = "No description provided"
-                            
                         if 'rationale' not in rec:
-                            logger.warning(f"Recommendation {i} missing rationale, adding default")
                             rec['rationale'] = "Matched based on student needs"
+                        if 'link' not in rec or rec['link'] is None:
+                            rec['link'] = ""
                         
-                        if 'link' not in rec:
-                            rec['link'] = ""  # Default empty link is acceptable
-                            
-                        # Create and validate the recommendation
-                        recommendation = ActivityRecommendation(**rec)
+                        # Add to valid recommendations
                         valid_recommendations.append(rec)
-                    except Exception as e:
-                        logger.error(f"Invalid recommendation {i}: {e}")
+                    
+                    if valid_recommendations:
+                        return {
+                            "recommendations": valid_recommendations,
+                            "primary_recommendation": valid_recommendations[0]
+                        }
+            except Exception as json_error:
+                logger.info(f"Direct JSON parsing failed, trying with LLM structured output: {json_error}")
                 
-                if not valid_recommendations:
-                    raise ValueError("No valid recommendations could be parsed")
+            # If direct parsing fails, use LLM with structured output
+            # Try with tool calling approach
+            llm_for_structure = ChatOpenAI(model_name="gpt-4o")
+            
+            # Create a function-calling format that OpenAI supports
+            structured_llm = llm_for_structure.bind_tools(
+                [ActivityRecommendationList], 
+                tool_choice={"type": "function", "function": {"name": "ActivityRecommendationList"}}
+            )
+            
+            # Let the LLM structure the output
+            structured_result = structured_llm.invoke(
+                f"""Extract activity recommendations from this text and format them according to the required structure:
                 
-                # Use the first valid recommendation as primary
-                recommendation = ActivityRecommendation(**valid_recommendations[0])
+                {raw_result}
                 
-                # Return all valid recommendations
-                return {
-                    "recommendations": valid_recommendations,
-                    "primary_recommendation": recommendation.model_dump()
-                }
+                The output should contain 1-3 activity recommendations, each with title, description, rationale, and optional link fields.
+                """
+            )
+            
+            # Extract the tool call from the response
+            if hasattr(structured_result, 'tool_calls') and structured_result.tool_calls:
+                tool_call = structured_result.tool_calls[0]
+                recommendations_list = tool_call.get('args', {}).get('recommendations', [])
+                
+                # Process recommendations to ensure proper format
+                valid_recommendations = []
+                for rec in recommendations_list:
+                    # Ensure all fields exist and None values are converted to empty strings
+                    if rec.get('link') is None:
+                        rec['link'] = ""
+                    valid_recommendations.append(rec)
+                
+                if valid_recommendations:
+                    return {
+                        "recommendations": valid_recommendations,
+                        "primary_recommendation": valid_recommendations[0]
+                    }
+                else:
+                    raise ValueError("No valid recommendations found in structured output")
             else:
-                raise ValueError("Expected a JSON array with at least one recommendation")
+                raise ValueError("No tool calls found in structured output")
+            
         except Exception as e:
-            logger.error(f"Error parsing structured output: {e}")
-            # Fallback to returning raw text if parsing fails
-            return {
-                "recommendations": [{
+            logger.error(f"Error processing structured output: {e}")
+            # Final fallback - create a simple recommendation from the raw text
+            try:
+                # Basic fallback to ensure we return something
+                simple_recommendation = {
                     "title": "Recommended Activity",
-                    "description": raw_result[:1000],  # Limit the length to avoid huge responses
-                    "rationale": "Generated based on your requirements",
-                    "link": ""
-                }],
-                "primary_recommendation": {
-                    "title": "Recommended Activity",
-                    "description": raw_result[:1000],  # Limit the length to avoid huge responses
-                    "rationale": "Generated based on your requirements",
+                    "description": raw_result[:500] + "..." if len(raw_result) > 500 else raw_result,
+                    "rationale": "Generated based on student requirements",
                     "link": ""
                 }
-            }
+                
+                return {
+                    "recommendations": [simple_recommendation],
+                    "primary_recommendation": simple_recommendation
+                }
+            except Exception as final_error:
+                logger.error(f"Final fallback error: {final_error}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to generate properly structured activity recommendations"
+                )
 
     except Exception as e:
         logger.error(f"Error running agent: {e}")

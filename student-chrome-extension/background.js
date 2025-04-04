@@ -3,6 +3,9 @@ let socket = null;
 let connectionAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 let reconnectTimer = null;
+// Buffer for activity data in case the socket is temporarily disconnected
+let activityBuffer = [];
+const MAX_BUFFER_SIZE = 100; // Limit the buffer size to prevent memory issues
 
 // Connect to the MCP server
 function connectToMcpServer() {
@@ -46,10 +49,19 @@ function connectToMcpServer() {
           type: 'hello',
           client: 'remote-browser-controller',
           name: userName,
-          capabilities: ['navigate', 'screenshot', 'getContent']
+          capabilities: ['navigate', 'screenshot', 'getContent', 'userActivity']
         };
         console.log('Sending hello message:', helloMessage);
         socket.send(JSON.stringify(helloMessage));
+        
+        // Send any buffered activity data
+        if (activityBuffer.length > 0) {
+          console.log(`Sending ${activityBuffer.length} buffered activity events`);
+          activityBuffer.forEach(activity => {
+            sendActivityToServer(activity, false); // Don't buffer again if sending fails
+          });
+          activityBuffer = []; // Clear buffer after sending
+        }
       };
       
       socket.onmessage = function(event) {
@@ -122,10 +134,83 @@ async function handleCommand(command) {
       
     case 'getContent':
       return await getPageContent();
+
+    case 'getUserActivity':
+      return await getUserActivityLog(command.params?.limit || 20);
       
     default:
       throw new Error('Unknown command: ' + command.action);
   }
+}
+
+// New command to retrieve recent user activity
+async function getUserActivityLog(limit) {
+  // This would return the most recent activity events from storage
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['userActivityLog'], function(result) {
+      const activityLog = result.userActivityLog || [];
+      resolve({
+        success: true, 
+        activities: activityLog.slice(-limit) // Return the most recent 'limit' events
+      });
+    });
+  });
+}
+
+// Send user activity to the server
+function sendActivityToServer(activity, bufferIfDisconnected = true) {
+  // Check if we're connected to the server
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    // Format the message for the server
+    const message = {
+      type: 'userActivity',
+      activity: activity
+    };
+    
+    try {
+      socket.send(JSON.stringify(message));
+      console.log('Sent activity to server:', activity.activity);
+      return true;
+    } catch (error) {
+      console.error('Error sending activity to server:', error);
+      if (bufferIfDisconnected) {
+        bufferActivity(activity);
+      }
+      return false;
+    }
+  } else {
+    if (bufferIfDisconnected) {
+      bufferActivity(activity);
+    }
+    return false;
+  }
+}
+
+// Buffer activity data if socket is not connected
+function bufferActivity(activity) {
+  // Add to buffer if not already full
+  if (activityBuffer.length < MAX_BUFFER_SIZE) {
+    activityBuffer.push(activity);
+    console.log('Buffered activity:', activity.activity);
+  } else {
+    // Remove oldest item if buffer is full
+    activityBuffer.shift();
+    activityBuffer.push(activity);
+    console.log('Buffer full, replaced oldest activity with:', activity.activity);
+  }
+  
+  // Also store in local storage for history
+  chrome.storage.local.get(['userActivityLog'], function(result) {
+    let activityLog = result.userActivityLog || [];
+    
+    // Limit the size of the activity log
+    if (activityLog.length >= 200) {
+      activityLog = activityLog.slice(-150); // Keep the most recent 150 events
+    }
+    
+    activityLog.push(activity);
+    chrome.storage.local.set({userActivityLog: activityLog});
+  });
 }
 
 // Command implementations
@@ -209,6 +294,25 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     console.log("Settings changed, resetting connection attempts to 0 and reconnecting");
     connectionAttempts = 0
     connectToMcpServer();
+    sendResponse({success: true});
+  } else if (message.type === 'userActivity') {
+    // Process user activity from content script
+    console.log('Received user activity:', message.activity);
+    
+    // Add tab information to the activity data
+    if (sender.tab) {
+      message.data = message.data || {};
+      message.data.tabId = sender.tab.id;
+      message.data.tabUrl = sender.tab.url;
+      message.data.tabTitle = sender.tab.title;
+    }
+    
+    // Forward to server
+    sendActivityToServer({
+      type: message.activity,
+      data: message.data
+    });
+    
     sendResponse({success: true});
   }
   

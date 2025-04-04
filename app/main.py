@@ -15,6 +15,7 @@ load_dotenv()
 
 from app.api.routes import router as api_router
 from app.websocket.server import start_websocket_server
+from app.routes.gallery import router as gallery_router
 
 # Configure logging
 logging.basicConfig(
@@ -47,6 +48,9 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(api_router, prefix="/api")
+
+# Include gallery routes
+app.include_router(gallery_router)
 
 # Route to serve the main HTML page
 @app.get("/", response_class=HTMLResponse)
