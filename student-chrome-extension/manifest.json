@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Remote Browser Controller",
+  "name": "Student AI Assistant",
   "version": "0.1",
-  "description": "Allows remote control of Chrome browser",
+  "description": "Allows remote control of Chrome browser to help students access AI tools",
   "permissions": [
     "tabs",
     "activeTab",
@@ -18,5 +18,10 @@
   "action": {
     "default_popup": "popup.html"
   },
-  "options_page": "options.html"
+  "options_page": "options.html",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
 }

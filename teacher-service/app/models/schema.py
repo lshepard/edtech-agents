@@ -22,7 +22,12 @@ class CommandResponse(BaseModel):
     result: Optional[CommandResult] = None
     error: Optional[str] = None
 
+class ClientInfo(BaseModel):
+    id: str
+    name: str
+
 class ServerStatus(BaseModel):
     status: str
     browser_clients: int
+    connected_clients: Optional[List[ClientInfo]] = []
     pending_commands: int

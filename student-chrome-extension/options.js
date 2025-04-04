@@ -2,6 +2,7 @@
 document.getElementById('saveBtn').addEventListener('click', function() {
     const serverUrl = document.getElementById('serverUrl').value.trim();
     const autoConnect = document.getElementById('autoConnect').checked;
+    const userName = document.getElementById('userName').value.trim();
     const statusElement = document.getElementById('status');
     
     // Validate the WebSocket URL
@@ -18,7 +19,8 @@ document.getElementById('saveBtn').addEventListener('click', function() {
     // Save the settings
     chrome.storage.local.set({
       mcpServerUrl: serverUrl,
-      autoConnect: autoConnect
+      autoConnect: autoConnect,
+      userName: userName
     }, function() {
       if (chrome.runtime.lastError) {
         showStatus('Error saving settings: ' + chrome.runtime.lastError.message, 'error');
@@ -34,9 +36,13 @@ document.getElementById('saveBtn').addEventListener('click', function() {
   
   // Load saved settings
   function loadSettings() {
-    chrome.storage.local.get(['mcpServerUrl', 'autoConnect'], function(result) {
+    chrome.storage.local.get(['mcpServerUrl', 'autoConnect', 'userName'], function(result) {
       if (result.mcpServerUrl) {
         document.getElementById('serverUrl').value = result.mcpServerUrl;
+      }
+      
+      if (result.userName) {
+        document.getElementById('userName').value = result.userName;
       }
       
       document.getElementById('autoConnect').checked = !!result.autoConnect;

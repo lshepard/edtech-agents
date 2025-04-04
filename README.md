@@ -35,3 +35,31 @@ The Student MCP Server is a WebSocket server that runs on student machines to re
 3. Use the command interface to send commands to connected clients
 4. Press Ctrl+C to stop the server
 
+### Teacher Service
+
+The Teacher Service allows educators to control and monitor student browsers, plan activities, and more.
+
+#### Installation
+
+1. Make sure you have [uv](https://github.com/astral-sh/uv) installed.
+
+2. Navigate to the teacher-service directory:
+   ```bash
+   cd teacher-service
+   ```
+
+3. Install dependencies:
+   ```bash
+   uv pip install -e .
+   ```
+
+#### Running the Server
+
+1. Start the server using Uvicorn:
+   ```bash
+   uvicorn app.main:app --host 0.0.0.0 --port 3030 --reload
+   ```
+
+2. The server will be available at http://localhost:3030
+3. API endpoints are accessible at http://localhost:3030/api/
+

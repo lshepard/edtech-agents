@@ -13,8 +13,9 @@ function connectToMcpServer() {
   }
   
   // Get the server URL from settings
-  chrome.storage.local.get(['mcpServerUrl'], function(result) {
+  chrome.storage.local.get(['mcpServerUrl', 'userName'], function(result) {
     const serverUrl = result.mcpServerUrl;
+    const userName = result.userName || 'Anonymous';
     
     if (!serverUrl) {
       console.log('No MCP server URL configured. Please set one in the extension options.');
@@ -32,16 +33,23 @@ function connectToMcpServer() {
       console.log('Connecting to MCP server at ' + serverUrl);
       socket = new WebSocket(serverUrl);
       
+      // Add additional debugging
+      console.log('WebSocket object created, readyState:', socket.readyState);
+      // 0: connecting, 1: open, 2: closing, 3: closed
+      
       socket.onopen = function() {
         console.log('Connected to MCP server!');
         connectionAttempts = 0;
         
         // Send a hello message to the server
-        socket.send(JSON.stringify({
+        const helloMessage = {
           type: 'hello',
           client: 'remote-browser-controller',
+          name: userName,
           capabilities: ['navigate', 'screenshot', 'getContent']
-        }));
+        };
+        console.log('Sending hello message:', helloMessage);
+        socket.send(JSON.stringify(helloMessage));
       };
       
       socket.onmessage = function(event) {
@@ -127,24 +135,13 @@ async function navigateToUrl(url) {
   }
   
   return new Promise((resolve, reject) => {
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      if (tabs.length === 0) {
-        // No active tab, create a new one
-        chrome.tabs.create({url: url}, function(tab) {
-          resolve({success: true, tab: {id: tab.id, url: tab.url}});
-        });
+    // Always create a new tab for navigation commands
+    chrome.tabs.create({url: url}, function(tab) {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError.message);
         return;
       }
-      
-      // Update the active tab
-      chrome.tabs.update(tabs[0].id, {url: url}, function(tab) {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError.message);
-          return;
-        }
-        
-        resolve({success: true, tab: {id: tab.id, url: tab.url}});
-      });
+      resolve({success: true, tab: {id: tab.id, url: tab.url}});
     });
   });
 }
@@ -209,6 +206,8 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     });
   } else if (message.type === 'settingsChanged') {
     // Reconnect if settings have changed
+    console.log("Settings changed, resetting connection attempts to 0 and reconnecting");
+    connectionAttempts = 0
     connectToMcpServer();
     sendResponse({success: true});
   }
@@ -228,15 +227,19 @@ chrome.runtime.onStartup.addListener(function() {
 // Try to connect when the extension is installed/updated
 chrome.runtime.onInstalled.addListener(function() {
   // Set default settings if not already set
-  chrome.storage.local.get(['mcpServerUrl', 'autoConnect'], function(result) {
+  chrome.storage.local.get(['mcpServerUrl', 'autoConnect', 'userName'], function(result) {
     const updates = {};
     
     if (!result.mcpServerUrl) {
-      updates.mcpServerUrl = 'ws://localhost:8080';
+      updates.mcpServerUrl = 'ws://localhost:8090';
     }
     
     if (result.autoConnect === undefined) {
       updates.autoConnect = true;
+    }
+    
+    if (!result.userName) {
+      updates.userName = 'Student';
     }
     
     if (Object.keys(updates).length > 0) {
