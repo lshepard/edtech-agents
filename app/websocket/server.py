@@ -15,6 +15,7 @@ screenshot_history = {}  # Store screenshot history by client
 # Global variables to keep track of the server
 websocket_server = None
 server_task = None
+periodic_screenshot_task = None  # Task for periodic screenshots
 
 # Configure logging
 logger = logging.getLogger("mcp_server")
@@ -22,6 +23,9 @@ logger = logging.getLogger("mcp_server")
 # Create screenshots directory if it doesn't exist
 SCREENSHOTS_DIR = os.path.join(os.path.dirname(__file__), '../../screenshots')
 os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
+
+# Screenshot interval in seconds
+SCREENSHOT_INTERVAL = 60  # Default to 1 minute
 
 async def handle_browser_client(websocket):
     """Handle a connection from the Chrome extension."""
@@ -36,7 +40,11 @@ async def handle_browser_client(websocket):
     try:
         async for message in websocket:
             try:
+                logger.debug(f"Raw message received from {client_id}: {message[:200]}...")
                 data = json.loads(message)
+                
+                # Log all received messages for debugging
+                logger.info(f"Message from {client_name} ({client_id}): {json.dumps(data)[:200]}...")
                 
                 # Handle hello message
                 if data.get("type") == "hello":
@@ -63,14 +71,14 @@ async def handle_browser_client(websocket):
                 
                 # Handle user activity
                 if data.get("type") == "userActivity":
-                    activity = data.get("activity", {})
-                    activity_type = activity.get("type")
+                    activity = data.get("activity", "")  # This is a string, not a dict
+                    activity_data = data.get("data", {})  # Actual data is in the data field
                     
-                    logger.info(f"Received user activity from {client_name} ({client_id}): {activity_type}")
+                    logger.info(f"Received user activity from {client_name} ({client_id}): {activity}")
                     
                     # Trigger screenshot capture for significant events
-                    if activity_type in ["pageLoad", "pageNavigation", "click", "formSubmission"]:
-                        await capture_screenshot_for_activity(websocket, client_id, client_name, activity)
+                    if activity in ["pageLoad", "pageNavigation", "click", "formSubmission"]:
+                        await capture_screenshot_for_activity(websocket, client_id, client_name, activity_data)
                     
                     continue
                 
@@ -87,7 +95,7 @@ async def handle_browser_client(websocket):
         del browser_clients[websocket]
         logger.info(f"Browser {client_name} ({client_id}) disconnected. Total browsers: {len(browser_clients)}")
 
-async def capture_screenshot_for_activity(websocket, client_id, client_name, activity):
+async def capture_screenshot_for_activity(websocket, client_id, client_name, activity_data):
     """Capture a screenshot when significant user activity occurs."""
     # Generate a unique command ID
     command_id = f"screenshot_{uuid.uuid4()}"
@@ -98,7 +106,8 @@ async def capture_screenshot_for_activity(websocket, client_id, client_name, act
         "action": "screenshot"
     }
     
-    logger.info(f"Requesting screenshot from {client_name} ({client_id}) for activity: {activity.get('type')}")
+    activity_type = activity_data.get("type", "unknown")
+    logger.info(f"Requesting screenshot from {client_name} ({client_id}) for activity: {activity_type}")
     
     try:
         # Send screenshot command to the browser
@@ -114,8 +123,18 @@ async def save_screenshot(client_id, client_name, screenshot_base64, command_id)
     try:
         # Generate a unique filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{client_id}_{timestamp}_{command_id[:8]}.png"
+        
+        # Check if this is a periodic screenshot based on command ID
+        is_periodic = "periodic_screenshot_" in command_id
+        
+        # Add special prefix for periodic screenshots
+        prefix = "periodic_" if is_periodic else ""
+        filename = f"{prefix}{client_id}_{timestamp}_{command_id[:8]}.png"
         filepath = os.path.join(SCREENSHOTS_DIR, filename)
+        
+        # Log beginning of screenshot save operation
+        screenshot_type = "periodic" if is_periodic else "event-triggered"
+        logger.info(f"Starting to save {screenshot_type} screenshot from {client_name} ({client_id}), size: {len(screenshot_base64) // 1024}KB")
         
         # Save the image to disk
         with open(filepath, "wb") as f:
@@ -128,7 +147,8 @@ async def save_screenshot(client_id, client_name, screenshot_base64, command_id)
             "timestamp": timestamp,
             "datetime": datetime.now().isoformat(),
             "client_id": client_id,
-            "client_name": client_name
+            "client_name": client_name,
+            "type": screenshot_type
         }
         
         screenshot_history[client_id].append(screenshot_info)
@@ -137,11 +157,11 @@ async def save_screenshot(client_id, client_name, screenshot_base64, command_id)
         if len(screenshot_history[client_id]) > 50:
             screenshot_history[client_id] = screenshot_history[client_id][-50:]
         
-        logger.info(f"Saved screenshot for {client_name} ({client_id}): {filepath}")
+        logger.info(f"Successfully saved {screenshot_type} screenshot for {client_name} ({client_id}): {filepath}")
         
         return filepath
     except Exception as e:
-        logger.error(f"Error saving screenshot: {e}")
+        logger.error(f"Error saving screenshot from {client_name} ({client_id}): {e}")
         return None
 
 async def get_screenshot_history(client_id=None):
@@ -191,6 +211,75 @@ async def send_to_browser(command, target_client=None):
         logger.warning(f"Target client '{target_client}' not found. Command not sent.")
         return False
 
+async def start_periodic_screenshots(interval=None):
+    """Start a background task to periodically take screenshots."""
+    global periodic_screenshot_task, SCREENSHOT_INTERVAL
+    
+    # Use provided interval or default
+    screenshot_interval = interval or SCREENSHOT_INTERVAL
+    
+    # Update the global interval if a new one is provided
+    if interval is not None:
+        SCREENSHOT_INTERVAL = interval
+        logger.info(f"Screenshot interval updated to {SCREENSHOT_INTERVAL} seconds")
+    
+    if periodic_screenshot_task is not None:
+        logger.info(f"Periodic screenshot task already running. Cancelling and restarting.")
+        periodic_screenshot_task.cancel()
+        
+    logger.info(f"Starting periodic screenshot task with interval of {screenshot_interval} seconds")
+    
+    # Create and store the task
+    periodic_screenshot_task = asyncio.create_task(periodic_screenshot_loop(screenshot_interval))
+    return periodic_screenshot_task
+
+async def stop_periodic_screenshots():
+    """Stop the periodic screenshot task if it's running."""
+    global periodic_screenshot_task
+    
+    if periodic_screenshot_task is not None:
+        logger.info("Stopping periodic screenshot task")
+        periodic_screenshot_task.cancel()
+        periodic_screenshot_task = None
+        return True
+    return False
+
+async def periodic_screenshot_loop(interval):
+    """Take screenshots at regular intervals."""
+    try:
+        while True:
+            # Wait for the interval
+            await asyncio.sleep(interval)
+            
+            # Take a screenshot from each connected client
+            if browser_clients:
+                logger.info(f"Taking periodic screenshots from {len(browser_clients)} client(s)")
+                for websocket, client_info in browser_clients.items():
+                    client_id = client_info["id"]
+                    client_name = client_info["name"]
+                    
+                    try:
+                        # Generate a unique command ID
+                        command_id = f"periodic_screenshot_{uuid.uuid4()}"
+                        
+                        # Create screenshot command
+                        command = {
+                            "id": command_id,
+                            "action": "screenshot"
+                        }
+                        
+                        logger.info(f"Requesting periodic screenshot from {client_name} ({client_id})")
+                        await websocket.send(json.dumps(command))
+                        
+                    except Exception as e:
+                        logger.error(f"Error requesting periodic screenshot from {client_name} ({client_id}): {e}")
+            else:
+                logger.info("No clients connected for periodic screenshots")
+    except asyncio.CancelledError:
+        logger.info("Periodic screenshot task was cancelled")
+    except Exception as e:
+        logger.error(f"Error in periodic screenshot loop: {e}")
+
 async def start_websocket_server():
     """Start the WebSocket server for browser connections."""
     global websocket_server
@@ -207,6 +296,10 @@ async def start_websocket_server():
         # Create the server
         websocket_server = await serve(handle_browser_client, "0.0.0.0", websocket_port)
         logger.info(f"WebSocket server successfully started on port {websocket_port}")
+        
+        # Start the periodic screenshot task
+        await start_periodic_screenshots()
+        
         return websocket_server
     except Exception as e:
         logger.error(f"Failed to start WebSocket server: {e}")
@@ -216,6 +309,9 @@ async def start_websocket_server():
 async def stop_websocket_server():
     """Gracefully stop the WebSocket server."""
     global websocket_server
+    
+    # First stop the periodic screenshot task
+    await stop_periodic_screenshots()
     
     if websocket_server is not None:
         logger.info("Shutting down WebSocket server...")
