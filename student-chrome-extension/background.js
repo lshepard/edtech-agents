@@ -335,7 +335,7 @@ chrome.runtime.onInstalled.addListener(function() {
     const updates = {};
     
     if (!result.mcpServerUrl) {
-      updates.mcpServerUrl = 'ws://socket.learninghelper.org';
+      updates.mcpServerUrl = 'wss://socket.learninghelper.org';
     }
     
     if (result.autoConnect === undefined) {
