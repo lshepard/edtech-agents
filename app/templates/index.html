@@ -193,7 +193,22 @@
             margin-bottom: 0.5em;
             color: var(--primary-color);
         }
-
+        
+        .alt-recommendation h4 a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .alt-recommendation h4 a:hover {
+            text-decoration: underline;
+        }
+        
+        .alt-title-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5em;
+        }
+        
         /* Browser selection styles */
         .browser-selection {
             margin-bottom: 1em;
@@ -256,6 +271,7 @@
             text-decoration: none;
             font-weight: bold;
             transition: background-color 0.2s;
+            margin: 0 0 1.2em 0;
         }
         
         .launch-btn:hover {
@@ -310,8 +326,80 @@
         }
         
         /* Use This Instead button */
+        .use-alt-btn {
+            background-color: #0066cc;
+            color: white;
+            font-size: 0.8em;
+            padding: 0.5em 1em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 0.5em;
+            display: inline-block;
+            font-weight: 500;
+            transition: background-color 0.15s ease-in-out;
+        }
+        
         .use-alt-btn:hover {
             background-color: #0055aa;
+            transform: translateY(-1px);
+        }
+        
+        /* Activity header styles */
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.8em;
+        }
+        
+        .activity-header h3 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.4em;
+        }
+        
+        .activity-header .launch-btn {
+            margin: 0;
+        }
+        
+        /* Title link and domain styles */
+        .title-container {
+            flex: 1;
+            margin-right: 1em;
+        }
+        
+        .title-container h3 {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .title-container a {
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-right: 0.5em;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .title-container a:hover {
+            text-decoration: underline;
+            color: #0055aa;
+        }
+        
+        .domain-label {
+            font-size: 0.7em;
+            color: #666;
+            font-weight: normal;
+            background-color: #f0f0f0;
+            padding: 0.3em 0.6em;
+            border-radius: 3px;
+            white-space: nowrap;
+            display: inline-block;
+            vertical-align: middle;
         }
     </style>
 </head>
@@ -324,6 +412,23 @@
     </header>
     
     <div class="container">
+        <div class="form-card">
+            <h2 class="form-title">Target Browser Selection</h2>
+            <div class="browser-selection">
+                <div class="browser-info">
+                    <label for="browserSelect"><strong>Target Browser:</strong></label>
+                    <span class="browser-count">
+                        <span id="statusIndicator" class="status-indicator status-disconnected"></span>
+                        <span id="browserCount">0 browsers connected</span>
+                    </span>
+                    <button type="button" class="refresh-browsers" id="refreshBrowsers">Refresh</button>
+                </div>
+                <select id="browserSelect" name="browserSelect">
+                    <!-- Browser options will be populated dynamically -->
+                </select>
+            </div>
+        </div>
+
         <div class="form-card">
             <h2 class="form-title">Plan Student Activity</h2>
             <form id="activityForm">
@@ -357,7 +462,15 @@
             <div class="result-body">
                 <div id="loading" class="loading">Planning activity...</div>
                 <div id="recommendation" style="display: none;">
-                    <h3 id="activity-title"></h3>
+                    <div class="activity-header">
+                        <div class="title-container">
+                            <h3>
+                                <a id="activity-title" href="#" target="_blank"></a>
+                                <span id="activity-domain" class="domain-label"></span>
+                            </h3>
+                        </div>
+                        <button id="launch-btn" class="launch-btn" disabled>Launch Activity</button>
+                    </div>
                     <p id="activity-description" class="result-description"></p>
                     <div class="rationale-section">
                         <h4 class="rationale-header">Rationale</h4>
@@ -375,24 +488,6 @@
                         <div class="alt-recommendations-title">Alternative Activities</div>
                         <div id="alt-recommendations-list"></div>
                     </div>
-                    
-                    <!-- Browser selection section -->
-                    <div class="browser-selection">
-                        <div class="browser-info">
-                            <label for="browserSelect"><strong>Target Browser:</strong></label>
-                            <span class="browser-count">
-                                <span id="statusIndicator" class="status-indicator status-disconnected"></span>
-                                <span id="browserCount">0 browsers connected</span>
-                            </span>
-                            <button type="button" class="refresh-browsers" id="refreshBrowsers">Refresh</button>
-                        </div>
-                        <select id="browserSelect" name="browserSelect">
-                            <option value="">All Connected Browsers</option>
-                            <!-- Browser options will be populated dynamically -->
-                        </select>
-                    </div>
-                    
-                    <button id="launch-btn" class="launch-btn" disabled>Launch Activity</button>
                 </div>
             </div>
         </div>
@@ -404,6 +499,7 @@
         const loadingDiv = document.getElementById('loading');
         const recommendationDiv = document.getElementById('recommendation');
         const activityTitle = document.getElementById('activity-title');
+        const activityDomain = document.getElementById('activity-domain');
         const activityDescription = document.getElementById('activity-description');
         const activityRationale = document.getElementById('activity-rationale');
         const launchBtn = document.getElementById('launch-btn');
@@ -412,6 +508,18 @@
         const refreshBrowsers = document.getElementById('refreshBrowsers');
         
         let currentActivityLink = '';
+
+        // Function to extract domain from URL
+        function extractDomain(url) {
+            if (!url) return '';
+            try {
+                const domain = new URL(url).hostname;
+                return domain.replace('www.', '');
+            } catch (e) {
+                console.error('Error extracting domain:', e);
+                return '';
+            }
+        }
 
         // Function to fetch and update connected browsers
         async function updateBrowsers() {
@@ -425,8 +533,7 @@
                 const browsers = await response.json();
                 const statusIndicator = document.getElementById('statusIndicator');
                 
-                // Clear existing options except the default "All" option
-                browserSelect.innerHTML = '<option value="">All Connected Browsers</option>';
+                browserSelect.innerHTML = '';
                 
                 // Add each browser as an option
                 browsers.forEach(browser => {
@@ -449,12 +556,15 @@
                 }
                 
                 // Disable launch button if no browsers and we have an activity link
+                console.log("Current activity link:", currentActivityLink, "Browsers length:", browsers.length);
                 if (browsers.length === 0 && currentActivityLink) {
                     launchBtn.disabled = true;
                     launchBtn.title = "No browsers connected";
-                } else if (currentActivityLink) {
+                    console.log("No browsers connected, button disabled");
+                } else if (currentActivityLink && currentActivityLink.trim() !== '') {
                     launchBtn.disabled = false;
                     launchBtn.title = "";
+                    console.log("Browsers connected and activity link exists, enabling button");
                 }
                 
             } catch (error) {
@@ -500,10 +610,32 @@
                 }
 
                 const result = await response.json();
+                console.log("API Response structure:", {
+                    hasRecommendation: !!result.recommendation,
+                    hasAllRecommendations: !!result.all_recommendations,
+                    recommendationCount: result.all_recommendations ? result.all_recommendations.length : 0,
+                    mainTitle: result.recommendation ? result.recommendation.title : null,
+                    mainLink: result.recommendation ? result.recommendation.link : null,
+                });
                 
                 // Display the structured recommendation data
                 const recommendation = result.recommendation;
                 activityTitle.textContent = recommendation.title;
+                
+                // Set the title link and domain if link exists
+                if (recommendation.link && recommendation.link.trim() !== '') {
+                    activityTitle.href = recommendation.link;
+                    activityTitle.setAttribute('href', recommendation.link);
+                    console.log("Setting main link:", recommendation.link);
+                    const domain = extractDomain(recommendation.link);
+                    activityDomain.textContent = domain;
+                    activityDomain.style.display = domain ? 'inline' : 'none';
+                } else {
+                    activityTitle.href = '#';
+                    activityTitle.setAttribute('href', '#');
+                    activityDomain.style.display = 'none';
+                }
+                
                 activityDescription.textContent = recommendation.description;
                 
                 // Format and display the rationale
@@ -520,65 +652,113 @@
                 const altRecommendationsList = document.getElementById('alt-recommendations-list');
                 altRecommendationsList.innerHTML = ''; // Clear previous recommendations
                 
-                // Check if we have more than one recommendation
-                if (result.all_recommendations && result.all_recommendations.length > 1) {
+                // Process alternative recommendations
+                if (result.all_recommendations && Array.isArray(result.all_recommendations) && result.all_recommendations.length > 1) {
+                    console.log(`Processing ${result.all_recommendations.length} recommendations`);
+                    
                     // Skip the first one (primary) and display others
                     const alternatives = result.all_recommendations.slice(1);
                     
                     if (alternatives.length > 0) {
-                        alternatives.forEach(rec => {
+                        console.log(`Found ${alternatives.length} alternative recommendations`);
+                        
+                        // Process each alternative
+                        alternatives.forEach((rec, index) => {
+                            console.log(`Creating alternative #${index + 1}: "${rec.title}", has link: ${!!rec.link}`);
+                            
+                            // Create the recommendation container
                             const altDiv = document.createElement('div');
                             altDiv.className = 'alt-recommendation';
                             
-                            const title = document.createElement('h4');
-                            title.textContent = rec.title;
+                            // Create the title section
+                            const titleContainer = document.createElement('div');
+                            titleContainer.className = 'alt-title-container';
                             
+                            const title = document.createElement('h4');
+                            
+                            // Process link if it exists
+                            if (rec.link && rec.link.trim() !== '') {
+                                // Create the link element
+                                const titleLink = document.createElement('a');
+                                titleLink.href = rec.link;
+                                titleLink.setAttribute('href', rec.link);
+                                titleLink.target = '_blank';
+                                titleLink.textContent = rec.title;
+                                title.appendChild(titleLink);
+                                
+                                // Add domain label
+                                const domain = extractDomain(rec.link);
+                                if (domain) {
+                                    const domainLabel = document.createElement('span');
+                                    domainLabel.className = 'domain-label';
+                                    domainLabel.textContent = domain;
+                                    domainLabel.style.marginLeft = '8px';
+                                    title.appendChild(domainLabel);
+                                }
+                            } else {
+                                // No link, just display text
+                                title.textContent = rec.title;
+                            }
+                            
+                            // Add title to container
+                            titleContainer.appendChild(title);
+                            altDiv.appendChild(titleContainer);
+                            
+                            // Add description
                             const desc = document.createElement('p');
                             desc.textContent = rec.description;
-                            
-                            altDiv.appendChild(title);
                             altDiv.appendChild(desc);
                             
-                            // Add a "Use This Instead" button if the activity has a link
+                            // Add the "Use This Instead" button if there's a link
                             if (rec.link && rec.link.trim() !== '') {
+                                const buttonContainer = document.createElement('div');
+                                buttonContainer.style.marginTop = '10px';
+                                
                                 const useButton = document.createElement('button');
                                 useButton.className = 'use-alt-btn';
                                 useButton.textContent = 'Use This Instead';
-                                useButton.style.fontSize = '0.8em';
-                                useButton.style.padding = '0.5em 1em';
-                                useButton.style.background = '#0066cc';
-                                useButton.style.color = 'white';
-                                useButton.style.border = 'none';
-                                useButton.style.borderRadius = '4px';
-                                useButton.style.cursor = 'pointer';
                                 
                                 useButton.addEventListener('click', () => {
-                                    // Update the current recommendation with this one
+                                    console.log(`Using alternative: "${rec.title}" with link: ${rec.link}`);
+                                    
+                                    // Update the main recommendation with this one
                                     activityTitle.textContent = rec.title;
                                     activityDescription.textContent = rec.description;
                                     activityRationale.innerHTML = formatRationale(rec.rationale);
                                     currentActivityLink = rec.link;
                                     
+                                    // Update the link and domain
+                                    activityTitle.href = rec.link;
+                                    activityTitle.setAttribute('href', rec.link);
+                                    
+                                    const domain = extractDomain(rec.link);
+                                    activityDomain.textContent = domain;
+                                    activityDomain.style.display = 'inline';
+                                    
                                     // Enable the launch button
-                                    if (currentActivityLink && document.querySelectorAll('#browserSelect option').length > 1) {
-                                        launchBtn.disabled = false;
-                                    }
+                                    updateBrowsers(); // Refresh browser status and update launch button
                                     
                                     // Scroll to the top of the recommendation
                                     resultDiv.scrollIntoView({ behavior: 'smooth' });
                                 });
                                 
-                                altDiv.appendChild(useButton);
+                                buttonContainer.appendChild(useButton);
+                                altDiv.appendChild(buttonContainer);
                             }
                             
+                            // Add the completed alternative to the list
                             altRecommendationsList.appendChild(altDiv);
                         });
                         
+                        // Show the alternatives section
                         altRecommendationsSection.style.display = 'block';
                     } else {
+                        // No alternatives to show
                         altRecommendationsSection.style.display = 'none';
                     }
                 } else {
+                    // No alternatives array or only one recommendation
+                    console.log("No alternative recommendations to display");
                     altRecommendationsSection.style.display = 'none';
                 }
                 
@@ -588,8 +768,22 @@
                     // Only enable if there are browsers connected
                     const browsers = await (await fetch('/api/clients')).json();
                     launchBtn.disabled = browsers.length === 0;
+                    
+                    // Add debugging to help troubleshoot
+                    console.log("Activity link:", currentActivityLink);
+                    console.log("Browser count:", browsers.length);
+                    console.log("Launch button disabled:", launchBtn.disabled);
+                    
+                    // If the button is disabled, set a helpful tooltip
+                    if (browsers.length === 0) {
+                        launchBtn.title = "No browsers connected. Please connect a browser.";
+                    } else {
+                        launchBtn.title = "";
+                    }
                 } else {
                     launchBtn.disabled = true;
+                    launchBtn.title = "No activity link available or empty link";
+                    console.log("No activity link available or empty link");
                 }
                 
                 // Show the recommendation and hide loading
