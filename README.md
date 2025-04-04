@@ -83,16 +83,22 @@ The Teacher Service can be deployed using Docker for easier setup and consistent
 
 1. Run the container:
    ```bash
-   docker run -p 3030:3030 teacher-service
+   docker run -p 3030:3030 -p 8090:8090 teacher-service
+   ```
+
+   This will start the application using:
+   ```
+   uvicorn app.main:app --reload --port 3030 --host 0.0.0.0
    ```
 
 2. The server will be available at http://localhost:3030
+3. The WebSocket server will be available on port 8090
 
 #### Environment Variables
 
 To pass environment variables to the container:
 ```bash
-docker run -p 3030:3030 -e API_KEY=yourkey -e OTHER_VAR=value teacher-service
+docker run -p 3030:3030 -p 8090:8090 -e API_KEY=yourkey -e OTHER_VAR=value teacher-service
 ```
 
 #### Using Docker Compose (Optional)
@@ -105,6 +111,7 @@ services:
     build: ./teacher-service
     ports:
       - "3030:3030"
+      - "8090:8090"
     environment:
       - API_KEY=yourkey
       - OTHER_ENV_VAR=value

@@ -18,8 +18,8 @@ COPY . .
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Expose the port the app runs on
-EXPOSE 3030
+# Expose the ports the app runs on
+EXPOSE 3030 8090
 
 # Command to run the application
-CMD ["python", "-m", "app.main"] 
+CMD ["uvicorn", "app.main:app", "--reload", "--port", "3030", "--host", "0.0.0.0"] 
