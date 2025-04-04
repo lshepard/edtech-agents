@@ -26,6 +26,8 @@ class ActivityRecommendation(BaseModel):
 
 class PlanResponse(BaseModel):
     recommendation: ActivityRecommendation
+    all_recommendations: List[ActivityRecommendation] = []
+    planning_process: str = ""
 
 @router.get("/clients", response_model=List[ClientInfo], summary="Get connected clients")
 async def get_clients():
@@ -182,20 +184,54 @@ async def plan_activity(request: PlanRequest):
 
     # Call the planning function from the llm module
     try:
-        recommendation_data = await generate_activity_plan(
+        plan_data = await generate_activity_plan(
             grade_level=request.gradeLevel,
             working_on=request.workingOn,
         )
         
-        # Create the structured response
-        recommendation = ActivityRecommendation(
-            title=recommendation_data["title"],
-            description=recommendation_data["description"],
-            rationale=recommendation_data["rationale"],
-            link=recommendation_data.get("link", "")
+        # Primary recommendation is already in the right format
+        primary_rec = plan_data["primary_recommendation"]
+        
+        # Create the list of all recommendations
+        all_recs = []
+        for rec in plan_data.get("recommendations", []):
+            all_recs.append(ActivityRecommendation(
+                title=rec["title"],
+                description=rec["description"],
+                rationale=rec["rationale"],
+                link=rec.get("link", "")
+            ))
+            
+        # Generate a planning process summary based on the primary recommendation
+        planning_process = f"An activity plan was created for a Grade {request.gradeLevel} student working on {request.workingOn}. "
+        
+        # Add explanation of the tool's functionality
+        planning_process += "The AI teaching assistant analyzed the student's grade level and learning needs, "
+        
+        # Mention if it used local resources or web search
+        if "local resources" in primary_rec["rationale"].lower():
+            planning_process += "then identified relevant pre-vetted local resources that match these requirements. "
+        elif "web search" in primary_rec["rationale"].lower():
+            planning_process += "searched for high-quality educational resources on the web since no local resources matched exactly. "
+        else:
+            planning_process += "then identified appropriate educational resources for this student. "
+            
+        planning_process += "The AI carefully considered grade-level appropriateness, alignment with learning objectives, and engagement factors. "
+        planning_process += "The recommended activity was selected because it best addresses the specific skills the student is working on."
+        
+        # Create the primary recommendation
+        primary = ActivityRecommendation(
+            title=primary_rec["title"],
+            description=primary_rec["description"],
+            rationale=primary_rec["rationale"],
+            link=primary_rec.get("link", "")
         )
         
-        return PlanResponse(recommendation=recommendation)
+        return PlanResponse(
+            recommendation=primary,
+            all_recommendations=all_recs,
+            planning_process=planning_process
+        )
     except Exception as e:
         # If generate_activity_plan raises an HTTPException, re-raise it.
         # Otherwise, wrap other exceptions.
