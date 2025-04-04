@@ -1,11 +1,11 @@
-from fastapi import APIRouter, HTTPException, status, Request, Query
+from fastapi import APIRouter, HTTPException, status, Request, Query, Depends, BackgroundTasks
 from pydantic import BaseModel
 import asyncio
 from datetime import datetime
 import logging
 from typing import Dict, Any, Optional, List
 
-from app.websocket.server import send_to_browser, browser_clients, command_results
+from app.websocket.server import send_to_browser, browser_clients, command_results, get_screenshot_history, start_periodic_screenshots, stop_periodic_screenshots, SCREENSHOT_INTERVAL
 from app.models.schema import NavigateRequest, CommandResponse, ServerStatus, ClientInfo
 from app.llm.planner import generate_activity_plan
 
@@ -28,6 +28,11 @@ class PlanResponse(BaseModel):
     recommendation: ActivityRecommendation
     all_recommendations: List[ActivityRecommendation] = []
     planning_process: str = ""
+
+class ScreenshotSettings(BaseModel):
+    """Settings for periodic screenshots."""
+    interval: int  # Interval in seconds
+    enabled: bool = True
 
 @router.get("/clients", response_model=List[ClientInfo], summary="Get connected clients")
 async def get_clients():
@@ -273,3 +278,36 @@ async def launch_activity(
         status_code=status.HTTP_504_GATEWAY_TIMEOUT, 
         detail="Command timed out"
     )
+
+@router.post("/screenshots/settings", response_model=Dict[str, Any])
+async def update_screenshot_settings(settings: ScreenshotSettings):
+    """Update periodic screenshot settings."""
+    if settings.interval < 5:
+        raise HTTPException(status_code=400, detail="Interval must be at least 5 seconds")
+    
+    if settings.enabled:
+        # Start or restart periodic screenshots with the new interval
+        await start_periodic_screenshots(settings.interval)
+        return {
+            "status": "success",
+            "message": f"Periodic screenshots enabled with interval of {settings.interval} seconds",
+            "settings": settings.dict()
+        }
+    else:
+        # Stop periodic screenshots
+        stopped = await stop_periodic_screenshots()
+        return {
+            "status": "success",
+            "message": "Periodic screenshots disabled" if stopped else "Periodic screenshots were already disabled",
+            "settings": settings.dict()
+        }
+
+@router.get("/screenshots/settings")
+async def get_screenshot_settings():
+    """Get current screenshot settings."""
+    from app.websocket.server import periodic_screenshot_task, SCREENSHOT_INTERVAL
+    
+    return {
+        "enabled": periodic_screenshot_task is not None,
+        "interval": SCREENSHOT_INTERVAL
+    }
