@@ -401,6 +401,73 @@
             display: inline-block;
             vertical-align: middle;
         }
+
+        /* Add new styles for the browser selection and launch section */
+        .browser-launch-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1em;
+            padding-bottom: 1em;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .browser-selection-inline {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .browser-selection-inline label {
+            margin-bottom: 0;
+            margin-right: 10px;
+            white-space: nowrap;
+        }
+        
+        .browser-selection-inline select {
+            margin-bottom: 0;
+            margin-right: 15px;
+            flex: 1;
+            max-width: 400px;
+        }
+        
+        .browser-selection-inline .launch-btn {
+            margin: 0;
+        }
+        
+        #browserList {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        #browserList div {
+            margin-bottom: 5px;
+            padding: 5px;
+            background-color: #f0f7ff;
+            border-radius: 4px;
+        }
+
+        /* Add styles for no browsers message */
+        .no-browsers-msg {
+            padding: 10px;
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            color: #666;
+            font-style: italic;
+            text-align: center;
+        }
+
+        /* Add styles for browser error message */
+        .browser-error-msg {
+            padding: 10px;
+            background-color: #fff8f8;
+            border: 1px solid #ffdddd;
+            border-radius: 4px;
+            color: #cc0000;
+            font-style: italic;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -413,19 +480,18 @@
     
     <div class="container">
         <div class="form-card">
-            <h2 class="form-title">Target Browser Selection</h2>
+            <h2 class="form-title">Connected Browsers</h2>
             <div class="browser-selection">
                 <div class="browser-info">
-                    <label for="browserSelect"><strong>Target Browser:</strong></label>
                     <span class="browser-count">
                         <span id="statusIndicator" class="status-indicator status-disconnected"></span>
                         <span id="browserCount">0 browsers connected</span>
                     </span>
                     <button type="button" class="refresh-browsers" id="refreshBrowsers">Refresh</button>
                 </div>
-                <select id="browserSelect" name="browserSelect">
-                    <!-- Browser options will be populated dynamically -->
-                </select>
+                <div id="browserList">
+                    <!-- Browser list will be populated dynamically -->
+                </div>
             </div>
         </div>
 
@@ -469,8 +535,18 @@
                                 <span id="activity-domain" class="domain-label"></span>
                             </h3>
                         </div>
-                        <button id="launch-btn" class="launch-btn" disabled>Launch Activity</button>
                     </div>
+                    
+                    <div class="browser-launch-container">
+                        <div class="browser-selection-inline">
+                            <label for="browserSelect"><strong>Selected Browser:</strong></label>
+                            <select id="browserSelect" name="browserSelect">
+                                <!-- Browser options will be populated dynamically -->
+                            </select>
+                            <button id="launch-btn" class="launch-btn" disabled>Launch Activity</button>
+                        </div>
+                    </div>
+                    
                     <p id="activity-description" class="result-description"></p>
                     <div class="rationale-section">
                         <h4 class="rationale-header">Rationale</h4>
@@ -506,6 +582,7 @@
         const browserSelect = document.getElementById('browserSelect');
         const browserCount = document.getElementById('browserCount');
         const refreshBrowsers = document.getElementById('refreshBrowsers');
+        const browserList = document.getElementById('browserList');
         
         let currentActivityLink = '';
 
@@ -534,14 +611,29 @@
                 const statusIndicator = document.getElementById('statusIndicator');
                 
                 browserSelect.innerHTML = '';
+                browserList.innerHTML = '';
                 
-                // Add each browser as an option
-                browsers.forEach(browser => {
-                    const option = document.createElement('option');
-                    option.value = browser.id;
-                    option.textContent = `${browser.name} (${browser.id})`;
-                    browserSelect.appendChild(option);
-                });
+                // Add each browser as an option to dropdown and to list
+                if (browsers.length === 0) {
+                    // Add a message when no browsers are connected
+                    const noBrowsersMsg = document.createElement('div');
+                    noBrowsersMsg.className = 'no-browsers-msg';
+                    noBrowsersMsg.textContent = 'No browsers connected. Please connect a browser using the browser extension.';
+                    browserList.appendChild(noBrowsersMsg);
+                } else {
+                    browsers.forEach(browser => {
+                        // Add to dropdown
+                        const option = document.createElement('option');
+                        option.value = browser.id;
+                        option.textContent = `${browser.name} (${browser.id})`;
+                        browserSelect.appendChild(option);
+                        
+                        // Add to list display
+                        const browserItem = document.createElement('div');
+                        browserItem.textContent = `${browser.name} (${browser.id})`;
+                        browserList.appendChild(browserItem);
+                    });
+                }
                 
                 // Update the browser count and status indicator
                 browserCount.textContent = `${browsers.length} browser${browsers.length !== 1 ? 's' : ''} connected`;
@@ -570,6 +662,14 @@
             } catch (error) {
                 console.error('Error fetching browsers:', error);
                 browserCount.textContent = "Error loading browsers";
+                browserList.innerHTML = ''; // Clear the browser list
+                
+                // Add error message to browser list
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'browser-error-msg';
+                errorMsg.textContent = 'Unable to load browsers. Please try refreshing.';
+                browserList.appendChild(errorMsg);
+                
                 const statusIndicator = document.getElementById('statusIndicator');
                 statusIndicator.classList.remove('status-connected');
                 statusIndicator.classList.add('status-disconnected');
