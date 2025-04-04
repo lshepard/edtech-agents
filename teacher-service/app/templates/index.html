@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Activity Planner</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        label { display: block; margin-bottom: 0.5em; }
+        select, textarea { width: 100%; margin-bottom: 1em; padding: 0.5em; box-sizing: border-box; }
+        button { padding: 0.7em 1.5em; cursor: pointer; }
+        .loading { font-style: italic; color: grey;}
+        
+        /* New styles for recommendation box */
+        #result { 
+            margin-top: 1em; 
+            padding: 0; 
+            border: 1px solid #ccc; 
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .result-header {
+            background-color: #f0f7ff;
+            padding: 1em;
+            border-bottom: 1px solid #ccc;
+        }
+        
+        .result-body {
+            padding: 1em;
+            background-color: white;
+        }
+        
+        .result-title {
+            margin-top: 0;
+            color: #0066cc;
+        }
+        
+        .result-description {
+            margin-bottom: 1em;
+        }
+        
+        .result-rationale {
+            font-style: italic;
+            color: #555;
+            margin-bottom: 1em;
+            padding-left: 1em;
+            border-left: 3px solid #ddd;
+        }
+        
+        /* Add a new style for rationale section with header */
+        .rationale-section {
+            margin: 1em 0;
+            padding: 1em;
+            background-color: #f5f9ff;
+            border-radius: 6px;
+            border: 1px solid #d0e0ff;
+        }
+        
+        .rationale-header {
+            margin-top: 0;
+            margin-bottom: 0.5em;
+            color: #0066cc;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        
+        .rationale-content {
+            font-style: italic;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        /* Planning process section */
+        .planning-process {
+            margin: 1em 0;
+            padding: 1em;
+            background-color: #f7f7f7;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 0.9em;
+            color: #555;
+        }
+        
+        .planning-process-title {
+            font-weight: bold;
+            margin-bottom: 0.5em;
+            color: #333;
+        }
+        
+        /* Alternative recommendations section */
+        .alt-recommendations {
+            margin-top: 1.5em;
+            border-top: 1px solid #eee;
+            padding-top: 1em;
+        }
+        
+        .alt-recommendations-title {
+            font-weight: bold;
+            margin-bottom: 1em;
+            color: #333;
+        }
+        
+        .alt-recommendation {
+            margin-bottom: 1em;
+            padding: 0.8em;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+        
+        .alt-recommendation h4 {
+            margin-top: 0;
+            margin-bottom: 0.5em;
+            color: #0066cc;
+        }
+
+        /* Browser selection styles */
+        .browser-selection {
+            margin-bottom: 1em;
+            padding: 1em;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+
+        .browser-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1em;
+        }
+
+        .browser-count {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .refresh-browsers {
+            background: none;
+            border: none;
+            color: #0066cc;
+            cursor: pointer;
+            font-size: 0.9em;
+            padding: 0;
+            text-decoration: underline;
+        }
+        
+        .launch-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.7em 1.5em;
+            cursor: pointer;
+            display: inline-block;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .launch-btn:hover {
+            background-color: #218838;
+        }
+        
+        .launch-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>Plan Student Activity</h1>
+    <form id="activityForm">
+        <label for="gradeLevel">Grade Level:</label>
+        <select id="gradeLevel" name="gradeLevel" required>
+            <option value="">Select Grade</option>
+            <option value="K">Kindergarten</option>
+            <option value="1">1st Grade</option>
+            <option value="2">2nd Grade</option>
+            <option value="3">3rd Grade</option>
+            <option value="4">4th Grade</option>
+            <option value="5">5th Grade</option>
+            <option value="6">6th Grade</option>
+            {/* Add more grades if needed */}
+        </select>
+
+        <label for="workingOn">Working on:</label>
+        <textarea id="workingOn" name="workingOn" rows="4" required placeholder="e.g., fractions, sentence structure, historical events..."></textarea>
+
+        <button type="submit">Plan Activity</button>
+    </form>
+
+    <div id="result">
+        <div class="result-header">
+            <h2 class="result-title">Suggested Activity</h2>
+        </div>
+        <div class="result-body">
+            <div id="loading" class="loading">Planning activity...</div>
+            <div id="recommendation" style="display: none;">
+                <h3 id="activity-title"></h3>
+                <p id="activity-description" class="result-description"></p>
+                <div class="rationale-section">
+                    <h4 class="rationale-header">Rationale</h4>
+                    <p id="activity-rationale" class="rationale-content"></p>
+                </div>
+                
+                <!-- Planning process explanation -->
+                <div class="planning-process" id="planning-process-section">
+                    <div class="planning-process-title">How This Activity Was Selected</div>
+                    <p id="planning-process"></p>
+                </div>
+                
+                <!-- Alternative recommendations section -->
+                <div class="alt-recommendations" id="alt-recommendations-section" style="display: none;">
+                    <div class="alt-recommendations-title">Alternative Activities</div>
+                    <div id="alt-recommendations-list"></div>
+                </div>
+                
+                <!-- Browser selection section -->
+                <div class="browser-selection">
+                    <div class="browser-info">
+                        <label for="browserSelect"><strong>Target Browser:</strong></label>
+                        <span class="browser-count" id="browserCount">0 browsers connected</span>
+                        <button type="button" class="refresh-browsers" id="refreshBrowsers">Refresh</button>
+                    </div>
+                    <select id="browserSelect" name="browserSelect">
+                        <option value="">All Connected Browsers</option>
+                        <!-- Browser options will be populated dynamically -->
+                    </select>
+                </div>
+                
+                <button id="launch-btn" class="launch-btn" disabled>Launch Activity</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('activityForm');
+        const resultDiv = document.getElementById('result');
+        const loadingDiv = document.getElementById('loading');
+        const recommendationDiv = document.getElementById('recommendation');
+        const activityTitle = document.getElementById('activity-title');
+        const activityDescription = document.getElementById('activity-description');
+        const activityRationale = document.getElementById('activity-rationale');
+        const launchBtn = document.getElementById('launch-btn');
+        const browserSelect = document.getElementById('browserSelect');
+        const browserCount = document.getElementById('browserCount');
+        const refreshBrowsers = document.getElementById('refreshBrowsers');
+        
+        let currentActivityLink = '';
+
+        // Function to fetch and update connected browsers
+        async function updateBrowsers() {
+            try {
+                const response = await fetch('/api/clients');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const browsers = await response.json();
+                
+                // Clear existing options except the default "All" option
+                browserSelect.innerHTML = '<option value="">All Connected Browsers</option>';
+                
+                // Add each browser as an option
+                browsers.forEach(browser => {
+                    const option = document.createElement('option');
+                    option.value = browser.id;
+                    option.textContent = `${browser.name} (${browser.id})`;
+                    browserSelect.appendChild(option);
+                });
+                
+                // Update the browser count
+                browserCount.textContent = `${browsers.length} browser${browsers.length !== 1 ? 's' : ''} connected`;
+                
+                // Disable launch button if no browsers and we have an activity link
+                if (browsers.length === 0 && currentActivityLink) {
+                    launchBtn.disabled = true;
+                    launchBtn.title = "No browsers connected";
+                } else if (currentActivityLink) {
+                    launchBtn.disabled = false;
+                    launchBtn.title = "";
+                }
+                
+            } catch (error) {
+                console.error('Error fetching browsers:', error);
+                browserCount.textContent = "Error loading browsers";
+            }
+        }
+        
+        // Initial browser update
+        updateBrowsers();
+        
+        // Set up periodic refresh of browsers (every 10 seconds)
+        const browserRefreshInterval = setInterval(updateBrowsers, 10000);
+        
+        // Manual refresh button
+        refreshBrowsers.addEventListener('click', updateBrowsers);
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            resultDiv.style.display = 'block';
+            loadingDiv.style.display = 'block';
+            recommendationDiv.style.display = 'none';
+            launchBtn.disabled = true;
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/plan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                // Display the structured recommendation data
+                const recommendation = result.recommendation;
+                activityTitle.textContent = recommendation.title;
+                activityDescription.textContent = recommendation.description;
+                
+                // Format and display the rationale
+                const formattedRationale = formatRationale(recommendation.rationale);
+                activityRationale.innerHTML = formattedRationale;
+                
+                // Display planning process
+                const planningProcessSection = document.getElementById('planning-process-section');
+                const planningProcess = document.getElementById('planning-process');
+                planningProcess.textContent = result.planning_process || "Activity selected based on grade level and learning objectives.";
+                
+                // Display alternative recommendations if available
+                const altRecommendationsSection = document.getElementById('alt-recommendations-section');
+                const altRecommendationsList = document.getElementById('alt-recommendations-list');
+                altRecommendationsList.innerHTML = ''; // Clear previous recommendations
+                
+                // Check if we have more than one recommendation
+                if (result.all_recommendations && result.all_recommendations.length > 1) {
+                    // Skip the first one (primary) and display others
+                    const alternatives = result.all_recommendations.slice(1);
+                    
+                    if (alternatives.length > 0) {
+                        alternatives.forEach(rec => {
+                            const altDiv = document.createElement('div');
+                            altDiv.className = 'alt-recommendation';
+                            
+                            const title = document.createElement('h4');
+                            title.textContent = rec.title;
+                            
+                            const desc = document.createElement('p');
+                            desc.textContent = rec.description;
+                            
+                            altDiv.appendChild(title);
+                            altDiv.appendChild(desc);
+                            
+                            // Add a "Use This Instead" button if the activity has a link
+                            if (rec.link && rec.link.trim() !== '') {
+                                const useButton = document.createElement('button');
+                                useButton.className = 'use-alt-btn';
+                                useButton.textContent = 'Use This Instead';
+                                useButton.style.fontSize = '0.8em';
+                                useButton.style.padding = '0.5em 1em';
+                                useButton.style.background = '#0066cc';
+                                useButton.style.color = 'white';
+                                useButton.style.border = 'none';
+                                useButton.style.borderRadius = '4px';
+                                useButton.style.cursor = 'pointer';
+                                
+                                useButton.addEventListener('click', () => {
+                                    // Update the current recommendation with this one
+                                    activityTitle.textContent = rec.title;
+                                    activityDescription.textContent = rec.description;
+                                    activityRationale.innerHTML = formatRationale(rec.rationale);
+                                    currentActivityLink = rec.link;
+                                    
+                                    // Enable the launch button
+                                    if (currentActivityLink && document.querySelectorAll('#browserSelect option').length > 1) {
+                                        launchBtn.disabled = false;
+                                    }
+                                    
+                                    // Scroll to the top of the recommendation
+                                    resultDiv.scrollIntoView({ behavior: 'smooth' });
+                                });
+                                
+                                altDiv.appendChild(useButton);
+                            }
+                            
+                            altRecommendationsList.appendChild(altDiv);
+                        });
+                        
+                        altRecommendationsSection.style.display = 'block';
+                    } else {
+                        altRecommendationsSection.style.display = 'none';
+                    }
+                } else {
+                    altRecommendationsSection.style.display = 'none';
+                }
+                
+                // Store the activity link and enable/disable launch button
+                currentActivityLink = recommendation.link;
+                if (currentActivityLink && currentActivityLink.trim() !== '') {
+                    // Only enable if there are browsers connected
+                    const browsers = await (await fetch('/api/clients')).json();
+                    launchBtn.disabled = browsers.length === 0;
+                } else {
+                    launchBtn.disabled = true;
+                }
+                
+                // Show the recommendation and hide loading
+                loadingDiv.style.display = 'none';
+                recommendationDiv.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                activityTitle.textContent = 'Error';
+                activityDescription.textContent = `Error: ${error.message}`;
+                activityRationale.textContent = '';
+                launchBtn.disabled = true;
+                
+                loadingDiv.style.display = 'none';
+                recommendationDiv.style.display = 'block';
+            }
+        });
+        
+        // Add event listener for launch button
+        launchBtn.addEventListener('click', async () => {
+            if (!currentActivityLink) return;
+            
+            launchBtn.disabled = true;
+            launchBtn.textContent = 'Launching...';
+            
+            try {
+                // Get the selected browser ID (if any)
+                const targetClient = browserSelect.value;
+                
+                // Build the URL with query parameter if a target is selected
+                let url = '/api/launch-activity';
+                if (targetClient) {
+                    url += `?target_client=${targetClient}`;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: currentActivityLink }),
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+                
+                // Success - update button
+                const result = await response.json();
+                launchBtn.textContent = 'Activity Launched!';
+                setTimeout(() => {
+                    launchBtn.textContent = 'Launch Activity';
+                    launchBtn.disabled = false;
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error launching activity:', error);
+                launchBtn.textContent = 'Launch Failed';
+                setTimeout(() => {
+                    launchBtn.textContent = 'Try Again';
+                    launchBtn.disabled = false;
+                }, 3000);
+            }
+        });
+        
+        // Clean up the interval when the page is unloaded
+        window.addEventListener('beforeunload', () => {
+            clearInterval(browserRefreshInterval);
+        });
+
+        // Function to format rationale text with better readability
+        function formatRationale(rationale) {
+            if (!rationale) return '';
+            
+            // Replace bullet points with proper HTML list items
+            let formatted = rationale.replace(/- ([^\n]+)/g, '<li>$1</li>');
+            
+            // If bullet points were found, wrap them in a ul
+            if (formatted.includes('<li>')) {
+                formatted = '<ul>' + formatted + '</ul>';
+            }
+            
+            // Highlight key phrases
+            const highlightPhrases = [
+                'grade level', 'skills', 'concepts', 
+                'specifically addresses', 'chosen', 'appropriate',
+                'local resources', 'web search'
+            ];
+            
+            highlightPhrases.forEach(phrase => {
+                const regex = new RegExp(`(${phrase})`, 'gi');
+                formatted = formatted.replace(regex, '<strong>$1</strong>');
+            });
+            
+            // Add paragraph breaks for better readability
+            formatted = formatted.replace(/\n\n/g, '</p><p>');
+            
+            return formatted;
+        }
+    </script>
+</body>
+</html>

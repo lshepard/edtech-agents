@@ -1,0 +1,452 @@
+{
+  "kindergarten": [
+    {
+      "grade_level": "K",
+      "lesson_title": "Counting",
+      "exercise_title": "Counting Out 1-20 Objects",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-counting/kindergarten-counting/e/counting-out-1-20-objects"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Counting",
+      "exercise_title": "Counting Objects",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-counting/kindergarten-counting/e/counting-objects"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Counting",
+      "exercise_title": "One More, One Less",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-counting/kindergarten-counting/e/one-more--one-less"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Numbers to 100",
+      "exercise_title": "Count From Any Number",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-counting/kindergarten-numbers-100/e/count-from-any-number"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Numbers to 100",
+      "exercise_title": "Count to 100",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-counting/kindergarten-numbers-100/e/count-to-100"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Numbers to 100",
+      "exercise_title": "Counting Tens",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-counting/kindergarten-numbers-100/e/counting-tens"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Count Objects",
+      "exercise_title": "Counting in Scenes",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-counting/kindergarten-count-object-topic/e/counting-in-scenes"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Count Objects",
+      "exercise_title": "How Many Objects 1",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-counting/kindergarten-count-object-topic/e/how-many-objects-1"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Count Objects",
+      "exercise_title": "How Many Objects 2",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-counting/kindergarten-count-object-topic/e/how-many-objects-2"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Comparing Numbers",
+      "exercise_title": "Compare Groups Through 10",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-counting/kindergarten-comparing-numbers/e/compare-groups-through-10"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Comparing Numbers",
+      "exercise_title": "Comparing Numbers Through 10",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-counting/kindergarten-comparing-numbers/e/comparing-numbers-through-10"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Comparing Numbers",
+      "exercise_title": "Sort Groups By Count",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-counting/kindergarten-comparing-numbers/e/sort-groups-by-count"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Teen Numbers",
+      "exercise_title": "Teen Numbers",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-counting/kindergarten-teens/e/teen-numbers-1"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Addition and Subtraction Introduction",
+      "exercise_title": "Addition 1",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-add-subtract/kindergarten-add-sub-intro/e/addition_1"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Addition and Subtraction Introduction",
+      "exercise_title": "Subtraction 1",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-add-subtract/kindergarten-add-sub-intro/e/subtraction_1"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Making 10",
+      "exercise_title": "Making Five",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-add-subtract/kindergarten-make-10/e/making-five"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Making 10",
+      "exercise_title": "Making Totals in Different Ways Within 10",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-add-subtract/kindergarten-make-10/e/making-totals-in-different-ways-within-10"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Making 5-9",
+      "exercise_title": "Making Ten",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-add-subtract/kindergarten-making-5-9/e/making-ten"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Making 5-9",
+      "exercise_title": "Making Ten 2",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-add-subtract/kindergarten-making-5-9/e/making-ten-2"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Put Together, Take Apart",
+      "exercise_title": "Put Together",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-add-subtract/kindergarten-together-apart/e/put-together"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Put Together, Take Apart",
+      "exercise_title": "Take Apart",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-add-subtract/kindergarten-together-apart/e/take-apart"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Addition and Subtraction Word Problems Within 10",
+      "exercise_title": "Addition Word Problems Within 10",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-add-subtract/kindergarten-add-sub-word-problem-within-10/e/addition-word-problems-within-10"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Addition and Subtraction Word Problems Within 10",
+      "exercise_title": "Subtraction Word Problems Within 10",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-add-subtract/kindergarten-add-sub-word-problem-within-10/e/subtraction-word-problems-within-10"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Compare Size",
+      "exercise_title": "Which Has More?",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-geometry/kindergarten-compare-size/e/which-has-more-"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Compare Size",
+      "exercise_title": "Compare Length",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-geometry/kindergarten-compare-size/e/compare-length"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Shapes",
+      "exercise_title": "Naming Shapes",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-geometry/kindergarten-shapes/e/naming-shapes"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Shapes",
+      "exercise_title": "Naming Shapes 2",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-geometry/kindergarten-shapes/e/naming-shapes-2"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Compare Shapes",
+      "exercise_title": "Relative Position",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-geometry/kindergarten-compare-shapes/e/relative-position"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Compare Shapes",
+      "exercise_title": "Compare Shapes",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-geometry/kindergarten-compare-shapes/e/compare-shapes"
+    },
+    {
+      "grade_level": "K",
+      "lesson_title": "Compose Shapes",
+      "exercise_title": "Compose Shapes",
+      "url": "https://www.khanacademy.org/math/cc-kindergarten-math/cc-kindergarten-geometry/kindergarten-composing-shapes/e/compose-shapes"
+    }
+  ],
+  "grade1": [
+    {
+      "grade_level": "1",
+      "lesson_title": "Numbers to 120",
+      "exercise_title": "Numbers to 120",
+      "url": "https://www.khanacademy.org/math/cc-1st-grade-math/cc-1st-place-value/cc-1st-numbers-120/e/numbers-to-120"
+    },
+    {
+      "grade_level": "1",
+      "lesson_title": "Ones and Tens",
+      "exercise_title": "Groups of Tens",
+      "url": "https://www.khanacademy.org/math/cc-1st-grade-math/cc-1st-place-value/cc-1st-ones-tens/e/groups-of-tens"
+    },
+    {
+      "grade_level": "1",
+      "lesson_title": "Ones and Tens",
+      "exercise_title": "Tens and Ones",
+      "url": "https://www.khanacademy.org/math/cc-1st-grade-math/cc-1st-place-value/cc-1st-ones-tens/e/tens-and-ones"
+    },
+    {
+      "grade_level": "1",
+      "lesson_title": "Ones and Tens",
+      "exercise_title": "Understanding 2-Digit Numbers",
+      "url": "https://www.khanacademy.org/math/cc-1st-grade-math/cc-1st-place-value/cc-1st-ones-tens/e/understanding-2-digit-numbers"
+    },
+    {
+      "grade_level": "1",
+      "lesson_title": "Two-Digit Compare",
+      "exercise_title": "Comparing Whole Numbers",
+      "url": "https://www.khanacademy.org/math/cc-1st-grade-math/cc-1st-place-value/cc-1st-two-digit-compare/e/comparing_whole_numbers"
+    },
+    {
+      "grade_level": "1",
+      "lesson_title": "Two-Digit Compare",
+      "exercise_title": "Comparing Two-Digit Numbers",
+      "url": "https://www.khanacademy.org/math/cc-1st-grade-math/cc-1st-place-value/cc-1st-two-digit-compare/e/comparing-two-digit-numbers-1"
+    },
+    {
+      "grade_level": "1",
+      "lesson_title": "Addition and Subtraction Within 10",
+      "exercise_title": "Relate Addition and Subtraction",
+      "url": "https://www.khanacademy.org/math/cc-1st-grade-math/cc-1st-add-subtract/cc-1st-add-subtract-10/e/relate-addition-and-subtraction"
+    },
+    {
+      "grade_level": "1",
+      "lesson_title": "Addition Within 20",
+      "exercise_title": "Addition 2",
+      "url": "https://www.khanacademy.org/math/cc-1st-grade-math/cc-1st-add-subtract/cc-1st-add-20/e/addition_2"
+    },
+    {
+      "grade_level": "1",
+      "lesson_title": "Addition Within 20",
+      "exercise_title": "Adding Three Numbers",
+      "url": "https://www.khanacademy.org/math/cc-1st-grade-math/cc-1st-add-subtract/cc-1st-add-20/e/adding-three-numbers"
+    },
+    {
+      "grade_level": "1",
+      "lesson_title": "Subtraction Within 20",
+      "exercise_title": "Subtraction 2",
+      "url": "https://www.khanacademy.org/math/cc-1st-grade-math/cc-1st-add-subtract/cc-1st-sub-20/e/subtraction_2"
+    }
+  ],
+  "grade2": [
+    {
+      "grade_level": "2",
+      "lesson_title": "Add Within 20",
+      "exercise_title": "Add Within 20 Visually",
+      "url": "https://www.khanacademy.org/math/cc-2nd-grade-math/x3184e0ec:add-and-subtract-within-20/x3184e0ec:add-within-20/e/add-within-20-visually"
+    },
+    {
+      "grade_level": "2",
+      "lesson_title": "Add Within 20",
+      "exercise_title": "Addition 2",
+      "url": "https://www.khanacademy.org/math/cc-2nd-grade-math/x3184e0ec:add-and-subtract-within-20/x3184e0ec:add-within-20/e/addition_2"
+    },
+    {
+      "grade_level": "2",
+      "lesson_title": "Repeated Addition",
+      "exercise_title": "Repeated Addition",
+      "url": "https://www.khanacademy.org/math/cc-2nd-grade-math/x3184e0ec:add-and-subtract-within-20/cc-2nd-repeated-addition/e/repeated-addition"
+    },
+    {
+      "grade_level": "2",
+      "lesson_title": "Repeated Addition",
+      "exercise_title": "Array Word Problems",
+      "url": "https://www.khanacademy.org/math/cc-2nd-grade-math/x3184e0ec:add-and-subtract-within-20/cc-2nd-repeated-addition/e/array-word-problems"
+    },
+    {
+      "grade_level": "2",
+      "lesson_title": "Subtract Within 20",
+      "exercise_title": "Subtract Within 20 Visually",
+      "url": "https://www.khanacademy.org/math/cc-2nd-grade-math/x3184e0ec:add-and-subtract-within-20/x3184e0ec:subtract-within-20/e/subtract-within-20-visually"
+    },
+    {
+      "grade_level": "2",
+      "lesson_title": "Subtract Within 20",
+      "exercise_title": "Subtraction 2",
+      "url": "https://www.khanacademy.org/math/cc-2nd-grade-math/x3184e0ec:add-and-subtract-within-20/x3184e0ec:subtract-within-20/e/subtraction_2"
+    },
+    {
+      "grade_level": "2",
+      "lesson_title": "Add and Subtract Within 20",
+      "exercise_title": "Add Subtract Within 20",
+      "url": "https://www.khanacademy.org/math/cc-2nd-grade-math/x3184e0ec:add-and-subtract-within-20/x3184e0ec:untitled-177/e/add-subtract-within-20"
+    },
+    {
+      "grade_level": "2",
+      "lesson_title": "Add and Subtract Within 20",
+      "exercise_title": "Addition and Subtraction Word Problems Within 20 Level 3",
+      "url": "https://www.khanacademy.org/math/cc-2nd-grade-math/x3184e0ec:add-and-subtract-within-20/x3184e0ec:untitled-177/e/addition-and-subtraction-word-problems-within-20--level-3"
+    },
+    {
+      "grade_level": "2",
+      "lesson_title": "Intro to Place Value",
+      "exercise_title": "Place Value Blocks Within 1000",
+      "url": "https://www.khanacademy.org/math/cc-2nd-grade-math/cc-2nd-place-value/x3184e0ec:intro-to-place-value/e/place-value-blocks-within-1000"
+    },
+    {
+      "grade_level": "2",
+      "lesson_title": "Intro to Place Value",
+      "exercise_title": "Place Value Tables Within 1000",
+      "url": "https://www.khanacademy.org/math/cc-2nd-grade-math/cc-2nd-place-value/x3184e0ec:intro-to-place-value/e/place-value-tables-within-1000"
+    }
+  ],
+  "grade3": [
+    {
+      "grade_level": "3",
+      "lesson_title": "Multiplication Introduction",
+      "exercise_title": "Equal Groups",
+      "url": "https://www.khanacademy.org/math/cc-third-grade-math/intro-to-multiplication/imp-multiplication-intro/e/equal-groups"
+    },
+    {
+      "grade_level": "3",
+      "lesson_title": "Multiplication Introduction",
+      "exercise_title": "Understand Equal Groups as Multiplication",
+      "url": "https://www.khanacademy.org/math/cc-third-grade-math/intro-to-multiplication/imp-multiplication-intro/e/understand-equal-groups-as-multiplication"
+    },
+    {
+      "grade_level": "3",
+      "lesson_title": "Multiplication Introduction",
+      "exercise_title": "Relate Repeated Addition to Multiplication",
+      "url": "https://www.khanacademy.org/math/cc-third-grade-math/intro-to-multiplication/imp-multiplication-intro/e/relate-repeated-addition-to-multiplication"
+    },
+    {
+      "grade_level": "3",
+      "lesson_title": "Multiplication on the Number Line",
+      "exercise_title": "Number Line",
+      "url": "https://www.khanacademy.org/math/cc-third-grade-math/intro-to-multiplication/multiplication-on-thnumber-line/e/number_line"
+    },
+    {
+      "grade_level": "3",
+      "lesson_title": "Multiply with Groups of Objects",
+      "exercise_title": "Meaning of Multiplication",
+      "url": "https://www.khanacademy.org/math/cc-third-grade-math/intro-to-multiplication/multiply-with-groups-of-objects/e/meaning-of-multiplication"
+    },
+    {
+      "grade_level": "3",
+      "lesson_title": "Multiply with Groups of Objects",
+      "exercise_title": "Multiply Using Groups of Objects",
+      "url": "https://www.khanacademy.org/math/cc-third-grade-math/intro-to-multiplication/multiply-with-groups-of-objects/e/multiply-using-groups-of-objects"
+    },
+    {
+      "grade_level": "3",
+      "lesson_title": "Multiplication with Arrays",
+      "exercise_title": "Understand Multiplication with Arrays",
+      "url": "https://www.khanacademy.org/math/cc-third-grade-math/intro-to-multiplication/multiplication-with-arrays/e/understand-multiplication-with-arrays"
+    },
+    {
+      "grade_level": "3",
+      "lesson_title": "Multiplication with Arrays",
+      "exercise_title": "Multiplying with Arrays",
+      "url": "https://www.khanacademy.org/math/cc-third-grade-math/intro-to-multiplication/multiplication-with-arrays/e/multiplying-with-arrays"
+    },
+    {
+      "grade_level": "3",
+      "lesson_title": "Multiplication in Contexts",
+      "exercise_title": "Multiplication in Contexts",
+      "url": "https://www.khanacademy.org/math/cc-third-grade-math/intro-to-multiplication/multiplication-in-contexts/e/multiplication-in-contexts"
+    },
+    {
+      "grade_level": "3",
+      "lesson_title": "Properties of Multiplication",
+      "exercise_title": "Represent the Commutative Property of Multiplication",
+      "url": "https://www.khanacademy.org/math/cc-third-grade-math/intro-to-multiplication/imp-properties-of-multiplication/e/represent-the-commutative-property-of-multiplication"
+    }
+  ],
+  "grade4": [
+    {
+      "grade_level": "4",
+      "lesson_title": "Intro to Place Value",
+      "exercise_title": "Place Value Blocks",
+      "url": "https://www.khanacademy.org/math/cc-fourth-grade-math/imp-place-value-and-rounding-2/imp-intro-to-place-value/e/place-value-blocks"
+    },
+    {
+      "grade_level": "4",
+      "lesson_title": "Intro to Place Value",
+      "exercise_title": "Place Value Tables",
+      "url": "https://www.khanacademy.org/math/cc-fourth-grade-math/imp-place-value-and-rounding-2/imp-intro-to-place-value/e/place-value-tables"
+    },
+    {
+      "grade_level": "4",
+      "lesson_title": "Intro to Place Value",
+      "exercise_title": "Place Value",
+      "url": "https://www.khanacademy.org/math/cc-fourth-grade-math/imp-place-value-and-rounding-2/imp-intro-to-place-value/e/place_value"
+    },
+    {
+      "grade_level": "4",
+      "lesson_title": "Intro to Place Value",
+      "exercise_title": "Creating Largest or Smallest Number",
+      "url": "https://www.khanacademy.org/math/cc-fourth-grade-math/imp-place-value-and-rounding-2/imp-intro-to-place-value/e/creating-largest-or-smallest-number"
+    },
+    {
+      "grade_level": "4",
+      "lesson_title": "Ways to Write Whole Numbers",
+      "exercise_title": "Numbers in Expanded Form",
+      "url": "https://www.khanacademy.org/math/cc-fourth-grade-math/imp-place-value-and-rounding-2/imp-ways-to-write-whole-numbers-expanded-form-and-written-form/e/numbers-in-expanded-form"
+    },
+    {
+      "grade_level": "4",
+      "lesson_title": "Writing Whole Numbers in Written Form",
+      "exercise_title": "Numbers in Written Form",
+      "url": "https://www.khanacademy.org/math/cc-fourth-grade-math/imp-place-value-and-rounding-2/writing-whole-numbers-in-written-form/e/numbers-in-written-form"
+    },
+    {
+      "grade_level": "4",
+      "lesson_title": "Writing Whole Numbers in Written Form",
+      "exercise_title": "Write Whole Numbers in Different Forms",
+      "url": "https://www.khanacademy.org/math/cc-fourth-grade-math/imp-place-value-and-rounding-2/writing-whole-numbers-in-written-form/e/write-whole-numbers-in-different-forms"
+    },
+    {
+      "grade_level": "4",
+      "lesson_title": "Regrouping Whole Numbers",
+      "exercise_title": "Regrouping Whole Numbers",
+      "url": "https://www.khanacademy.org/math/cc-fourth-grade-math/imp-place-value-and-rounding-2/imp-regrouping-whole-numbers/e/regrouping-whole-numbers"
+    },
+    {
+      "grade_level": "4",
+      "lesson_title": "How 10 Relates to Place Value",
+      "exercise_title": "Multiplying by 10",
+      "url": "https://www.khanacademy.org/math/cc-fourth-grade-math/imp-place-value-and-rounding-2/imp-how-10-relates-to-place-value/e/multiplying-by-10"
+    },
+    {
+      "grade_level": "4",
+      "lesson_title": "How 10 Relates to Place Value",
+      "exercise_title": "Dividing Whole Numbers by 10",
+      "url": "https://www.khanacademy.org/math/cc-fourth-grade-math/imp-place-value-and-rounding-2/imp-how-10-relates-to-place-value/e/dividing-whole-numbers-by-10"
+    }
+  ],
+  "grade5": [
+    {
+      "grade_level": "5",
+      "lesson_title": "Decimal Place Value Intro",
+      "exercise_title": "Identifying Decimal Place Values",
+      "url": "https://www.khanacademy.org/math/cc-fifth-grade-math/imp-place-value-and-decimals/imp-decimal-place-value-intro/e/identifying-decimal-place-values"
+    },
+    {
+      "grade_level": "5",
+      "lesson_title": "Decimal Place Value Intro",
+      "exercise_title": "Value of a Decimal Digit",
+      "url": "https://www.khanacademy.org/math/cc-fifth-grade-math/imp-place-value-and-decimals/imp-decimal-place-value-intro/e/value-of-a-decimal-digit"
+    },
+    {
+      "grade_level": "5",
+      "lesson_title": "Decimals on the Number Line - Thousandths",
+      "exercise_title": "Decimals on the Number Line (Thousandths)",
+      "url": "https://www.khanacademy.org/math/cc-fifth-grade-math/imp-place-value-and-decimals/decimals-on-the-number-line-thousandths/e/decimals-on-the-number-line--thousandths-"
+    }
+  ]
+}

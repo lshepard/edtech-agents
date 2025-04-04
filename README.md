@@ -63,3 +63,56 @@ The Teacher Service allows educators to control and monitor student browsers, pl
 2. The server will be available at http://localhost:3030
 3. API endpoints are accessible at http://localhost:3030/api/
 
+### Docker Deployment
+
+The Teacher Service can be deployed using Docker for easier setup and consistent environments.
+
+#### Building the Docker Image
+
+1. Navigate to the teacher-service directory:
+   ```bash
+   cd teacher-service
+   ```
+
+2. Build the Docker image:
+   ```bash
+   docker build -t teacher-service .
+   ```
+
+#### Running with Docker
+
+1. Run the container:
+   ```bash
+   docker run -p 3030:3030 teacher-service
+   ```
+
+2. The server will be available at http://localhost:3030
+
+#### Environment Variables
+
+To pass environment variables to the container:
+```bash
+docker run -p 3030:3030 -e API_KEY=yourkey -e OTHER_VAR=value teacher-service
+```
+
+#### Using Docker Compose (Optional)
+
+Create a `docker-compose.yml` file for easier management:
+```yaml
+version: '3'
+services:
+  teacher-service:
+    build: ./teacher-service
+    ports:
+      - "3030:3030"
+    environment:
+      - API_KEY=yourkey
+      - OTHER_ENV_VAR=value
+    restart: unless-stopped
+```
+
+Run with Docker Compose:
+```bash
+docker-compose up -d
+```
+
