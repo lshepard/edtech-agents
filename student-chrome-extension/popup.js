@@ -23,10 +23,10 @@ function updateConnectionStatus() {
   
   chrome.runtime.sendMessage({ type: 'getStatus' }, function(response) {
     if (response.connected) {
-      statusElement.textContent = 'Connected to MCP Server';
+      statusElement.textContent = 'Connected to Socket Server';
       statusElement.className = 'status connected';
     } else {
-      statusElement.textContent = 'Disconnected from MCP Server';
+      statusElement.textContent = 'Disconnected from Socket Server';
       statusElement.className = 'status disconnected';
     }
   });

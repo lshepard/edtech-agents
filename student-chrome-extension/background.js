@@ -7,8 +7,8 @@ let reconnectTimer = null;
 let activityBuffer = [];
 const MAX_BUFFER_SIZE = 100; // Limit the buffer size to prevent memory issues
 
-// Connect to the MCP server
-function connectToMcpServer() {
+// Connect to the Socket Server
+function connectToSocketServer() {
   // Clear any existing reconnect timer
   if (reconnectTimer) {
     clearTimeout(reconnectTimer);
@@ -16,12 +16,12 @@ function connectToMcpServer() {
   }
   
   // Get the server URL from settings
-  chrome.storage.local.get(['mcpServerUrl', 'userName'], function(result) {
-    const serverUrl = result.mcpServerUrl;
+  chrome.storage.local.get(['socketServerUrl', 'userName'], function(result) {
+    const serverUrl = result.socketServerUrl;
     const userName = result.userName || 'Anonymous';
     
     if (!serverUrl) {
-      console.log('No MCP server URL configured. Please set one in the extension options.');
+      console.log('No Socket Server URL configured. Please set one in the extension options.');
       return;
     }
     
@@ -31,9 +31,9 @@ function connectToMcpServer() {
       socket = null;
     }
     
-    // Connect to the MCP server
+    // Connect to the Socket Server
     try {
-      console.log('Connecting to MCP server at ' + serverUrl);
+      console.log('Connecting to Socket Server at ' + serverUrl);
       socket = new WebSocket(serverUrl);
       
       // Add additional debugging
@@ -41,7 +41,7 @@ function connectToMcpServer() {
       // 0: connecting, 1: open, 2: closing, 3: closed
       
       socket.onopen = function() {
-        console.log('Connected to MCP server!');
+        console.log('Connected to Socket Server!');
         connectionAttempts = 0;
         
         // Send a hello message to the server
@@ -69,7 +69,7 @@ function connectToMcpServer() {
           const message = JSON.parse(event.data);
           handleCommand(message)
             .then(result => {
-              // Send the result back to the MCP server
+              // Send the result back to the Socket Server
               if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({
                   id: message.id || 'unknown',
@@ -80,7 +80,7 @@ function connectToMcpServer() {
             .catch(error => {
               console.error('Error handling command:', error);
               
-              // Send error back to the MCP server
+              // Send error back to the Socket Server
               if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({
                   id: message.id || 'unknown',
@@ -94,7 +94,7 @@ function connectToMcpServer() {
       };
       
       socket.onclose = function() {
-        console.log('Disconnected from MCP server');
+        console.log('Disconnected from Socket Server');
         
         // Try to reconnect after a delay, with exponential backoff
         connectionAttempts++;
@@ -102,7 +102,7 @@ function connectToMcpServer() {
           const delay = Math.min(30000, Math.pow(2, connectionAttempts) * 1000);
           console.log(`Reconnecting in ${delay/1000} seconds (attempt ${connectionAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
           
-          reconnectTimer = setTimeout(connectToMcpServer, delay);
+          reconnectTimer = setTimeout(connectToSocketServer, delay);
         } else {
           console.log('Max reconnection attempts reached. Please reconnect manually.');
         }
@@ -112,7 +112,7 @@ function connectToMcpServer() {
         console.error('Socket error details:', JSON.stringify(error));
       };
     } catch (error) {
-      console.error('Error connecting to MCP server:', error);
+      console.error('Error connecting to Socket Server:', error);
     }
   });
 }
@@ -130,9 +130,7 @@ async function handleCommand(command) {
       return await navigateToUrl(command.params?.url);
     
     case 'screenshot':
-      // Check if this is a periodic screenshot based on command ID
-      const isPeriodic = command.id && command.id.startsWith('periodic_screenshot_');
-      return await takeScreenshot(isPeriodic);
+      return await takeScreenshot();
       
     case 'getContent':
       return await getPageContent();
@@ -234,7 +232,7 @@ async function navigateToUrl(url) {
   });
 }
 
-async function takeScreenshot(isPeriodic = false) {
+async function takeScreenshot() {
   return new Promise((resolve, reject) => {
     chrome.tabs.captureVisibleTab(null, {format: 'png'}, function(dataUrl) {
       if (chrome.runtime.lastError) {
@@ -244,19 +242,7 @@ async function takeScreenshot(isPeriodic = false) {
       
       // Extract base64 image data
       const base64Data = dataUrl.split(',')[1];
-      
-      // Add metadata about the screenshot
-      let result = {
-        success: true, 
-        screenshot: base64Data
-      };
-      
-      // Add periodic flag if this is a periodic screenshot
-      if (isPeriodic) {
-        result.type = 'periodic';
-      }
-      
-      resolve(result);
+      resolve({success: true, screenshot: base64Data});
     });
   });
 }
@@ -292,7 +278,7 @@ async function getPageContent() {
 // Listen for messages from the popup or options page
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   if (message.type === 'connect') {
-    connectToMcpServer();
+    connectToSocketServer();
     sendResponse({success: true});
   } else if (message.type === 'disconnect') {
     if (socket) {
@@ -308,7 +294,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     // Reconnect if settings have changed
     console.log("Settings changed, resetting connection attempts to 0 and reconnecting");
     connectionAttempts = 0
-    connectToMcpServer();
+    connectToSocketServer();
     sendResponse({success: true});
   } else if (message.type === 'userActivity') {
     // Process user activity from content script
@@ -334,27 +320,19 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   return true; // Keep the message channel open for async responses
 });
 
-// Connect on startup if auto-connect is enabled
+// Always connect on startup (no longer checking autoConnect setting)
 chrome.runtime.onStartup.addListener(function() {
-  chrome.storage.local.get(['autoConnect'], function(result) {
-    if (result.autoConnect) {
-      connectToMcpServer();
-    }
-  });
+  connectToSocketServer();
 });
 
 // Try to connect when the extension is installed/updated
 chrome.runtime.onInstalled.addListener(function() {
   // Set default settings if not already set
-  chrome.storage.local.get(['mcpServerUrl', 'autoConnect', 'userName'], function(result) {
+  chrome.storage.local.get(['socketServerUrl', 'userName'], function(result) {
     const updates = {};
     
-    if (!result.mcpServerUrl) {
-      updates.mcpServerUrl = 'wss://socket.learninghelper.org';
-    }
-    
-    if (result.autoConnect === undefined) {
-      updates.autoConnect = true;
+    if (!result.socketServerUrl) {
+      updates.socketServerUrl = 'wss://socket.learninghelper.org';
     }
     
     if (!result.userName) {
@@ -364,5 +342,8 @@ chrome.runtime.onInstalled.addListener(function() {
     if (Object.keys(updates).length > 0) {
       chrome.storage.local.set(updates);
     }
+    
+    // Always connect when installed or updated
+    connectToSocketServer();
   });
 });
