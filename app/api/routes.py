@@ -229,7 +229,7 @@ async def plan_activity(request: PlanRequest):
             title=primary_rec["title"],
             description=primary_rec["description"],
             rationale=primary_rec["rationale"],
-            link=primary_rec.get("link", "")
+            link=primary_rec["link"]
         )
         
         return PlanResponse(

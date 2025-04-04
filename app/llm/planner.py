@@ -29,7 +29,7 @@ class ActivityRecommendation(BaseModel):
     title: str = Field(description="The title or name of the recommended activity")
     description: str = Field(description="A brief description of the activity")
     rationale: str = Field(description="Why this activity is appropriate for the student")
-    link: Optional[str] = Field(description="A URL to the activity, if available")
+    link: str = Field(description="A URL to the activity")
 
 class ActivityRecommendationList(BaseModel):
     """List of activity recommendations"""
@@ -146,7 +146,7 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
         - title: The name of the activity (required)
         - description: A detailed description of the activity (required)
         - rationale: Why this activity is appropriate for the student (required)
-        - link: URL to the activity (optional, use an empty string "" if not available)
+        - link: URL to the activity (required)
         """
         
         # Format the system message with the actual values
@@ -235,7 +235,7 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
                 
                 {raw_result}
                 
-                The output should contain 1-3 activity recommendations, each with title, description, rationale, and optional link fields.
+                The output should contain 1-3 activity recommendations, each with title, description, rationale, and link fields.
                 """
             )
             
@@ -247,9 +247,6 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
                 # Process recommendations to ensure proper format
                 valid_recommendations = []
                 for rec in recommendations_list:
-                    # Ensure all fields exist and None values are converted to empty strings
-                    if rec.get('link') is None:
-                        rec['link'] = ""
                     valid_recommendations.append(rec)
                 
                 if valid_recommendations:
