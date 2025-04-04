@@ -19,7 +19,7 @@ from langchain.schema import SystemMessage, HumanMessage
 from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger("mcp_server")
+logger = logging.getLogger("server")
 
 CONTEXT_DIR = "../../context" # Adjusted path relative to planner.py
 
@@ -96,7 +96,7 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
 
     try:
         # 3. Initialize the LLM
-        llm = ChatOpenAI(temperature=0.7, model_name="gpt-4")
+        llm = ChatOpenAI(temperature=0.7, model_name="gpt-o3-mini")
         
         # 4. Define the Tavily search tool
         tavily_tool = TavilySearch(

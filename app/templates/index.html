@@ -3,13 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Activity Planner</title>
+    <title>Teaching Helper</title>
+    <link rel="icon" href="/static/logo.png" type="image/png">
     <style>
-        body { font-family: sans-serif; margin: 2em; }
-        label { display: block; margin-bottom: 0.5em; }
-        select, textarea { width: 100%; margin-bottom: 1em; padding: 0.5em; box-sizing: border-box; }
-        button { padding: 0.7em 1.5em; cursor: pointer; }
-        .loading { font-style: italic; color: grey;}
+        :root {
+            --primary-color: #0066cc;
+            --secondary-color: #f0f7ff;
+            --accent-color: #28a745;
+            --text-color: #333;
+            --light-gray: #f5f5f5;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 0;
+            color: var(--text-color);
+            background-color: #f9f9f9;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e0e0e0' fill-opacity='0.4' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        .app-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1em 2em;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .app-title {
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+        
+        .app-logo {
+            height: 40px;
+            margin-right: 15px;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2em;
+        }
+        
+        label { 
+            display: block; 
+            margin-bottom: 0.5em; 
+            font-weight: 500;
+        }
+        
+        select, textarea { 
+            width: 100%; 
+            margin-bottom: 1em; 
+            padding: 0.7em; 
+            box-sizing: border-box; 
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        button { 
+            padding: 0.7em 1.5em; 
+            cursor: pointer; 
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #0055aa;
+        }
+        
+        .loading { 
+            font-style: italic; 
+            color: grey;
+        }
         
         /* New styles for recommendation box */
         #result { 
@@ -20,10 +96,11 @@
             overflow: hidden;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             display: none;
+            background-color: white;
         }
         
         .result-header {
-            background-color: #f0f7ff;
+            background-color: var(--secondary-color);
             padding: 1em;
             border-bottom: 1px solid #ccc;
         }
@@ -35,7 +112,7 @@
         
         .result-title {
             margin-top: 0;
-            color: #0066cc;
+            color: var(--primary-color);
         }
         
         .result-description {
@@ -62,7 +139,7 @@
         .rationale-header {
             margin-top: 0;
             margin-bottom: 0.5em;
-            color: #0066cc;
+            color: var(--primary-color);
             font-size: 1.1em;
             font-weight: bold;
         }
@@ -114,7 +191,7 @@
         .alt-recommendation h4 {
             margin-top: 0;
             margin-bottom: 0.5em;
-            color: #0066cc;
+            color: var(--primary-color);
         }
 
         /* Browser selection styles */
@@ -136,12 +213,32 @@
         .browser-count {
             font-size: 0.9em;
             color: #666;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-connected {
+            background-color: var(--accent-color);
+            box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+        }
+        
+        .status-disconnected {
+            background-color: #dc3545;
+            box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);
         }
 
         .refresh-browsers {
             background: none;
             border: none;
-            color: #0066cc;
+            color: var(--primary-color);
             cursor: pointer;
             font-size: 0.9em;
             padding: 0;
@@ -149,7 +246,7 @@
         }
         
         .launch-btn {
-            background-color: #28a745;
+            background-color: var(--accent-color);
             color: white;
             border: none;
             border-radius: 4px;
@@ -158,6 +255,7 @@
             display: inline-block;
             text-decoration: none;
             font-weight: bold;
+            transition: background-color 0.2s;
         }
         
         .launch-btn:hover {
@@ -168,70 +266,134 @@
             background-color: #cccccc;
             cursor: not-allowed;
         }
+        
+        /* Form styles */
+        .form-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2em;
+        }
+        
+        .form-title {
+            margin-top: 0;
+            color: var(--primary-color);
+            margin-bottom: 1em;
+            font-size: 1.5em;
+        }
+        
+        .form-submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.8em 1.5em;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: auto;
+            margin: 1em 0 0.5em;
+        }
+        
+        .form-submit-btn:hover {
+            background-color: #0055aa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-icon {
+            margin-right: 8px;
+        }
+        
+        /* Use This Instead button */
+        .use-alt-btn:hover {
+            background-color: #0055aa;
+        }
     </style>
 </head>
 <body>
-    <h1>Plan Student Activity</h1>
-    <form id="activityForm">
-        <label for="gradeLevel">Grade Level:</label>
-        <select id="gradeLevel" name="gradeLevel" required>
-            <option value="">Select Grade</option>
-            <option value="K">Kindergarten</option>
-            <option value="1">1st Grade</option>
-            <option value="2">2nd Grade</option>
-            <option value="3">3rd Grade</option>
-            <option value="4">4th Grade</option>
-            <option value="5">5th Grade</option>
-            <option value="6">6th Grade</option>
-            {/* Add more grades if needed */}
-        </select>
+    <header class="app-header">
+        <h1 class="app-title">
+            <img src="/static/logo.png" alt="Teaching Helper Logo" class="app-logo">
+            Teaching Helper
+        </h1>
+    </header>
+    
+    <div class="container">
+        <div class="form-card">
+            <h2 class="form-title">Plan Student Activity</h2>
+            <form id="activityForm">
+                <label for="gradeLevel">Grade Level:</label>
+                <select id="gradeLevel" name="gradeLevel" required>
+                    <option value="">Select Grade</option>
+                    <option value="K">Kindergarten</option>
+                    <option value="1">1st Grade</option>
+                    <option value="2">2nd Grade</option>
+                    <option value="3">3rd Grade</option>
+                    <option value="4">4th Grade</option>
+                    <option value="5">5th Grade</option>
+                    <option value="6">6th Grade</option>
+                    {/* Add more grades if needed */}
+                </select>
 
-        <label for="workingOn">Working on:</label>
-        <textarea id="workingOn" name="workingOn" rows="4" required placeholder="e.g., fractions, sentence structure, historical events..."></textarea>
+                <label for="workingOn">Working on:</label>
+                <textarea id="workingOn" name="workingOn" rows="4" required placeholder="e.g., fractions, sentence structure, historical events..."></textarea>
 
-        <button type="submit">Plan Activity</button>
-    </form>
-
-    <div id="result">
-        <div class="result-header">
-            <h2 class="result-title">Suggested Activity</h2>
+                <button type="submit" class="form-submit-btn">
+                    <span class="btn-icon">🚀</span>
+                    Plan Activity
+                </button>
+            </form>
         </div>
-        <div class="result-body">
-            <div id="loading" class="loading">Planning activity...</div>
-            <div id="recommendation" style="display: none;">
-                <h3 id="activity-title"></h3>
-                <p id="activity-description" class="result-description"></p>
-                <div class="rationale-section">
-                    <h4 class="rationale-header">Rationale</h4>
-                    <p id="activity-rationale" class="rationale-content"></p>
-                </div>
-                
-                <!-- Planning process explanation -->
-                <div class="planning-process" id="planning-process-section">
-                    <div class="planning-process-title">How This Activity Was Selected</div>
-                    <p id="planning-process"></p>
-                </div>
-                
-                <!-- Alternative recommendations section -->
-                <div class="alt-recommendations" id="alt-recommendations-section" style="display: none;">
-                    <div class="alt-recommendations-title">Alternative Activities</div>
-                    <div id="alt-recommendations-list"></div>
-                </div>
-                
-                <!-- Browser selection section -->
-                <div class="browser-selection">
-                    <div class="browser-info">
-                        <label for="browserSelect"><strong>Target Browser:</strong></label>
-                        <span class="browser-count" id="browserCount">0 browsers connected</span>
-                        <button type="button" class="refresh-browsers" id="refreshBrowsers">Refresh</button>
+
+        <div id="result">
+            <div class="result-header">
+                <h2 class="result-title">Suggested Activity</h2>
+            </div>
+            <div class="result-body">
+                <div id="loading" class="loading">Planning activity...</div>
+                <div id="recommendation" style="display: none;">
+                    <h3 id="activity-title"></h3>
+                    <p id="activity-description" class="result-description"></p>
+                    <div class="rationale-section">
+                        <h4 class="rationale-header">Rationale</h4>
+                        <p id="activity-rationale" class="rationale-content"></p>
                     </div>
-                    <select id="browserSelect" name="browserSelect">
-                        <option value="">All Connected Browsers</option>
-                        <!-- Browser options will be populated dynamically -->
-                    </select>
+                    
+                    <!-- Planning process explanation -->
+                    <div class="planning-process" id="planning-process-section">
+                        <div class="planning-process-title">How This Activity Was Selected</div>
+                        <p id="planning-process"></p>
+                    </div>
+                    
+                    <!-- Alternative recommendations section -->
+                    <div class="alt-recommendations" id="alt-recommendations-section" style="display: none;">
+                        <div class="alt-recommendations-title">Alternative Activities</div>
+                        <div id="alt-recommendations-list"></div>
+                    </div>
+                    
+                    <!-- Browser selection section -->
+                    <div class="browser-selection">
+                        <div class="browser-info">
+                            <label for="browserSelect"><strong>Target Browser:</strong></label>
+                            <span class="browser-count">
+                                <span id="statusIndicator" class="status-indicator status-disconnected"></span>
+                                <span id="browserCount">0 browsers connected</span>
+                            </span>
+                            <button type="button" class="refresh-browsers" id="refreshBrowsers">Refresh</button>
+                        </div>
+                        <select id="browserSelect" name="browserSelect">
+                            <option value="">All Connected Browsers</option>
+                            <!-- Browser options will be populated dynamically -->
+                        </select>
+                    </div>
+                    
+                    <button id="launch-btn" class="launch-btn" disabled>Launch Activity</button>
                 </div>
-                
-                <button id="launch-btn" class="launch-btn" disabled>Launch Activity</button>
             </div>
         </div>
     </div>
@@ -261,6 +423,7 @@
                 }
                 
                 const browsers = await response.json();
+                const statusIndicator = document.getElementById('statusIndicator');
                 
                 // Clear existing options except the default "All" option
                 browserSelect.innerHTML = '<option value="">All Connected Browsers</option>';
@@ -273,8 +436,17 @@
                     browserSelect.appendChild(option);
                 });
                 
-                // Update the browser count
+                // Update the browser count and status indicator
                 browserCount.textContent = `${browsers.length} browser${browsers.length !== 1 ? 's' : ''} connected`;
+                
+                // Update visual status indicator
+                if (browsers.length > 0) {
+                    statusIndicator.classList.remove('status-disconnected');
+                    statusIndicator.classList.add('status-connected');
+                } else {
+                    statusIndicator.classList.remove('status-connected');
+                    statusIndicator.classList.add('status-disconnected');
+                }
                 
                 // Disable launch button if no browsers and we have an activity link
                 if (browsers.length === 0 && currentActivityLink) {
@@ -288,6 +460,9 @@
             } catch (error) {
                 console.error('Error fetching browsers:', error);
                 browserCount.textContent = "Error loading browsers";
+                const statusIndicator = document.getElementById('statusIndicator');
+                statusIndicator.classList.remove('status-connected');
+                statusIndicator.classList.add('status-disconnected');
             }
         }
         
