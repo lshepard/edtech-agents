@@ -122,9 +122,6 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
         if any of the pre-vetted materials
         matches the subject desired (even if a different grade level), then select one of those.
 
-        ONLY FALL BACK TO SEARCH if there are no local resources that match.
-        In that case, then you can search the web for reliable, high quality educational games and activities that teach the specific skill.
-
         The student's information is:
         Grade Level: {grade_level}
         Working on: {working_on}
@@ -146,7 +143,14 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
         - title: The name of the activity (required)
         - description: A detailed description of the activity (required)
         - rationale: Why this activity is appropriate for the student (required)
-        - link: URL to the activity (required)
+        - destination_app: The name of the app to open (required). Either "zearn" or "khanacademy".
+        - destination_details: A dictionary containing the details for the destination app.
+          - zearn:
+            - grade: The grade level to assign the student to.
+            - mission: The mission to assign the student to.
+            - topic: The topic to assign the student to.
+          - khanacademy:
+            - url: the url to open in the browser.
         """
         
         # Format the system message with the actual values
