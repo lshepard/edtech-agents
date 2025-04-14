@@ -138,6 +138,14 @@ async function handleCommand(command) {
     case 'getUserActivity':
       return await getUserActivityLog(command.params?.limit || 20);
       
+    case 'executeScript':
+      return await executeScriptInTab(
+        command.params?.tabId,
+        command.params?.script,
+        command.params?.args || [],
+        command.params?.file
+      );
+      
     default:
       throw new Error('Unknown command: ' + command.action);
   }
@@ -270,6 +278,46 @@ async function getPageContent() {
         }
         
         resolve({success: true, content: results[0].result});
+      });
+    });
+  });
+}
+
+async function executeScriptInTab(tabId, script, args = [], file) {
+  return new Promise((resolve, reject) => {
+    // Determine which tab to target
+    const targetTabId = tabId ? parseInt(tabId) : null;
+
+    chrome.tabs.query(targetTabId ? { active: true, currentWindow: true } : {}, (tabs) => {
+      const finalTabId = targetTabId || (tabs[0]?.id);
+      
+      if (!finalTabId) {
+        reject('No valid tab found');
+        return;
+      }
+
+      const injection = file ? { files: [file] } : { func: (scriptStr, ...args) => {
+        // Actual script execution in page context
+        return eval(scriptStr)(...args);
+      }, args: [script, ...args] };
+
+      chrome.scripting.executeScript({
+        target: { tabId: finalTabId },
+        ...injection,
+        world: 'MAIN' // Use main world to access page variables
+      }, (results) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError.message);
+          return;
+        }
+
+        resolve({
+          success: true,
+          results: results.map(r => ({
+            result: r.result,
+            frameId: r.frameId
+          }))
+        });
       });
     });
   });

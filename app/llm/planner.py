@@ -164,7 +164,7 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
         # 6. Create the agent with structured output
         agent = create_openai_functions_agent(
             llm=llm, 
-            tools=[tavily_tool], 
+            tools=[] # [tavily_tool], 
             prompt=prompt
         )
         

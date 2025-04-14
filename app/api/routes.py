@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Request, Query, Depends, BackgroundTasks
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import asyncio
 from datetime import datetime
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Union
 
 from app.websocket.server import send_to_browser, browser_clients, command_results, get_screenshot_history, start_periodic_screenshots, stop_periodic_screenshots, SCREENSHOT_INTERVAL
 from app.models.schema import NavigateRequest, CommandResponse, ServerStatus, ClientInfo
@@ -33,6 +33,12 @@ class ScreenshotSettings(BaseModel):
     """Settings for periodic screenshots."""
     interval: int  # Interval in seconds
     enabled: bool = True
+
+class ExecuteScriptRequest(BaseModel):
+    script: Optional[str] = Field(None, description="JavaScript code to execute")
+    file: Optional[str] = Field(None, description="Script file from extension bundle")
+    args: List[Union[str, int, bool]] = Field([], description="Arguments to pass to the script")
+    tabId: Optional[int] = Field(None, description="Specific tab ID to target")
 
 @router.get("/clients", response_model=List[ClientInfo], summary="Get connected clients")
 async def get_clients():
@@ -74,6 +80,34 @@ async def get_discovery():
                 "description": "Get the HTML content of the current page",
                 "endpoint": "/api/content",
                 "method": "POST"
+            },
+            {
+                "name": "executeScript",
+                "description": "Execute JavaScript in browser context",
+                "endpoint": "/api/execute-script",
+                "method": "POST",
+                "parameters": {
+                    "script": {
+                        "type": "string",
+                        "description": "JavaScript code to execute",
+                        "required": False
+                    },
+                    "file": {
+                        "type": "string",
+                        "description": "Extension script file path",
+                        "required": False
+                    },
+                    "args": {
+                        "type": "array",
+                        "description": "Arguments to pass to the script",
+                        "required": False
+                    },
+                    "tabId": {
+                        "type": "integer",
+                        "description": "Specific tab to target",
+                        "required": False
+                    }
+                }
             }
         ]
     }
@@ -311,3 +345,46 @@ async def get_screenshot_settings():
         "enabled": periodic_screenshot_task is not None,
         "interval": SCREENSHOT_INTERVAL
     }
+
+@router.post("/execute-script", response_model=CommandResponse, summary="Execute script in browser")
+async def execute_script(
+    request: ExecuteScriptRequest,
+    target_client: Optional[str] = Query(None, description="Target client ID or name")
+):
+    """API endpoint to execute JavaScript in the browser context"""
+    command_id = f"script_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    
+    if not request.script and not request.file:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Either script or file must be provided"
+        )
+    
+    command = {
+        "id": command_id,
+        "action": "executeScript",
+        "params": {
+            "script": request.script,
+            "file": request.file,
+            "args": request.args,
+            "tabId": request.tabId
+        }
+    }
+    
+    success = await send_to_browser(command, target_client)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, 
+            detail="No browsers connected or target client not found"
+        )
+    
+    # Wait for the result with longer timeout
+    for _ in range(100):  # 10 second timeout
+        if command_id in command_results:
+            return command_results.pop(command_id)
+        await asyncio.sleep(0.1)
+    
+    raise HTTPException(
+        status_code=status.HTTP_504_GATEWAY_TIMEOUT, 
+        detail="Script execution timed out"
+    )
