@@ -13,7 +13,7 @@ from langchain.chains import LLMChain
 
 # New imports for Tavily and Agent
 from langchain_tavily import TavilySearch
-from langchain.agents import AgentExecutor, create_openai_functions_agent
+from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema import SystemMessage, HumanMessage
 from langchain.output_parsers import PydanticOutputParser
@@ -165,17 +165,17 @@ async def generate_activity_plan(grade_level: str, working_on: str) -> Dict[str,
             MessagesPlaceholder(variable_name="agent_scratchpad"),
         ])
         
-        # 6. Create the agent with structured output
-        agent = create_openai_functions_agent(
-            llm=llm, 
-            tools=[] # [tavily_tool], 
-            prompt=prompt
+        # 6. Create the agent without tools
+        agent = create_openai_tools_agent(
+            llm=llm,
+            prompt=prompt,
+            tools=[]  # Explicitly set empty tools list
         )
         
-        # 7. Create the agent executor
+        # 7. Create the agent executor without tools
         agent_executor = AgentExecutor(
             agent=agent,
-            tools=[tavily_tool],
+            tools=[],  # Remove Tavily tool
             verbose=True,
             handle_parsing_errors=True,
         )
